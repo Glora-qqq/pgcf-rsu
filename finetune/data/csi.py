@@ -118,37 +118,3 @@ def load_test_csi(
     except Exception as e:
         print(f"[ERROR] LoadCSIFailed {csi_file}: {e}")
         return None
-
-def verify_test_csi_loading():
-
-    from config_test import TEST_DATA_ROOT, TEST_SCENES, SCENE_NAME_MAPPING
-
-    print("=" * 60)
-    print("Validation testCSILoad")
-    print("=" * 60)
-
-    test_scene = 'Scene_1'
-    test_rsf = 'RSF_1'
-    test_vehicle = 'Car1'
-
-    csi = load_test_csi(
-        data_root=TEST_DATA_ROOT,
-        scene=test_scene,
-        rsf=test_rsf,
-        vehicle=test_vehicle,
-    )
-
-    if csi is not None:
-        print(f"✓ CSILoaded successfully")
-        print(f"  Shape: {csi.shape}")
-        print(f"  Data Type: {csi.dtype}")
-        print(f"  ago750Frame Range: [{csi[:, :750].min():.4f}, {csi[:, :750].max():.4f}]")
-        print(f"  After750Frame Range: [{csi[:, 750:].min():.4f}, {csi[:, 750:].max():.4f}]")
-        print(f"  After750Frame Full0Check: {np.all(csi[:, 750:] == 0)}")
-    else:
-        print("✗ CSILoading failed")
-
-    print("=" * 60)
-
-if __name__ == '__main__':
-    verify_test_csi_loading()

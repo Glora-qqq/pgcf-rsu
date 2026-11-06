@@ -223,14 +223,3 @@ def print_config():
     print(f"  ✅ Strengths: Hardly overfit, Full retention pre-trainingCSIKnowledge")
 
     print("="*80)
-
-if __name__ == '__main__':
-    print_config()
-
-    print(f"\n[Validation Path]")
-    validate_paths()
-
-    print(f"\n[Create Output Directory]")
-    create_output_dirs()
-
-    print(f"\n[Done]")

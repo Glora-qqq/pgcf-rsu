@@ -16,7 +16,6 @@ from .quality import (
     SpatialQualityFusion,
     SpatialQualityEstimator,
     MultiRSFSpatialQualityFusion,
-    SpatialQualityAnalyzer,
     create_quality
 )
 
@@ -39,7 +38,6 @@ __all__ = [
     'SpatialQualityFusion',
     'SpatialQualityEstimator',
     'MultiRSFSpatialQualityFusion',
-    'SpatialQualityAnalyzer',
     'create_quality',
     'PoseRegressor',
     'PoseHead',

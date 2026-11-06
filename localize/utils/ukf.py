@@ -234,29 +234,3 @@ class UKF6DFilter:
     def reset(self):
 
         self.ukf.P *= 100.0
-
-if __name__ == "__main__":
-    np.random.seed(42)
-    T = 100
-    t = np.linspace(0, 10, T)
-
-    gt = np.column_stack([
-        np.sin(t),
-        np.cos(t),
-        t / 10
-    ])
-
-    noise = np.random.normal(0, 0.5, (T, 3))
-    gps_noisy = gt + noise
-
-    if HAS_FILTERPY:
-        gps_filtered = apply_ukf_to_gps(gps_noisy)
-
-        error_noisy = np.linalg.norm(gps_noisy - gt, axis=1).mean()
-        error_filtered = np.linalg.norm(gps_filtered - gt, axis=1).mean()
-
-        print(f"OriginalGPSError: {error_noisy:.4f}")
-        print(f"UKFFilter error: {error_filtered:.4f}")
-        print(f"Improvement: {(1 - error_filtered/error_noisy)*100:.1f}%")
-    else:
-        print("filterpyNot Installed, Skip test")

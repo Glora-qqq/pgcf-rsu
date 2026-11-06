@@ -192,19 +192,3 @@ def print_config_summary():
     print(f"  Equipment: {EXTRACT_CONFIG['device']}")
 
     print("\n" + "=" * 70)
-
-if __name__ == '__main__':
-    print_config_summary()
-    print("\n")
-    verify_config()
-
-    print("\n[Sample Output Path] ")
-    paths = get_output_paths()
-    for key, path in paths.items():
-        print(f"  {key}: {path}")
-
-    print("\n[Sample Feature File Path] ")
-    train_file = get_feature_file_path('Scene1', 'RSF1', 'Car1', is_test=False)
-    test_file = get_feature_file_path('Scene_1', 'RSF1', 'Car1', is_test=True)
-    print(f"  Training Sets: {train_file}")
-    print(f"  Test set: {test_file}")

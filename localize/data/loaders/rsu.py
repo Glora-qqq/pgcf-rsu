@@ -125,29 +125,3 @@ def get_rsf_with_antenna_positions(
         rsf_antenna_list.append(antenna_position)
 
     return rsf_extrinsic_list, rsf_antenna_list
-
-if __name__ == '__main__':
-    data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[3] / 'data')) / 'train'
-
-    print("="*80)
-    print("TestScene1 RSFLocation")
-    print("="*80)
-    rsf_dict = load_scene_rsf_positions(data_root, 'Scene1')
-
-    if rsf_dict is not None:
-        print(f"Loaded successfully, Contains {len(rsf_dict)} PieceRSF")
-
-        for rsf_name, rsf_data in rsf_dict.items():
-            print(f"\n{rsf_name}:")
-            print(f"  Raw Data: {rsf_data}")
-
-            position, orientation = get_rsf_pose(rsf_dict, rsf_name)
-            if position is not None:
-                print(f"  Location (m): {position}")
-                print(f"  Posture (Radian): {orientation}")
-                print(f"  Posture (degrees): {orientation * 180 / np.pi}")
-
-        rsf_numpy = rsf_dict_to_numpy(rsf_dict)
-        print(f"\nConvertednumpyFormat:")
-        for rsf_name, rsf_array in rsf_numpy.items():
-            print(f"  {rsf_name}: {rsf_array}")

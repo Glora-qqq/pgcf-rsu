@@ -124,15 +124,3 @@ def verify_paths():
     print("=" * 60)
 
     return all_exist
-
-if __name__ == '__main__':
-    verify_paths()
-
-    print("\nTest Configuration:")
-    print(f"  CSIFrames: {TEST_CSI_CONFIG['num_frames_original']} → {TEST_CSI_CONFIG['num_frames_padded']}")
-    print(f"  RGBFrames: {TEST_RGB_CONFIG['num_frames_original']} → {TEST_RGB_CONFIG['num_frames_padded']}")
-    print(f"  Window size: {TEST_WINDOW_CONFIG['window_size']}")
-    print(f"  Step: {TEST_WINDOW_CONFIG['stride']}")
-    print(f"  Minimum valid frames: {TEST_WINDOW_CONFIG['min_valid_frames']}")
-    print(f"  Batch size: {TEST_CONFIG['batch_size']}")
-    print(f"  WiFo mask ratio: {TEST_CONFIG['mask_ratio']}")

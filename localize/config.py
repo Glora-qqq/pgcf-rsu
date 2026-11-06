@@ -326,13 +326,3 @@ def create_output_dirs():
     CHECKPOINT_ROOT.mkdir(parents=True, exist_ok=True)
     LOG_ROOT.mkdir(parents=True, exist_ok=True)
     print("[INFO] Output directory created")
-
-if __name__ == '__main__':
-    print("\nPGCF-RSU Positioning Configuration")
-
-    config = TrainConfig(scenes=['Scene1'])
-    config.print_config()
-
-    create_output_dirs()
-
-    print("\n[Done]")

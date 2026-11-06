@@ -173,24 +173,3 @@ def create_extract_samples(dataset_config: Dict, views: List[str]) -> List[Extra
     print(f"✅ Successfully created {len(samples)} samples")
 
     return samples
-
-if __name__ == "__main__":
-    import sys
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from config_infer import TRAIN_CONFIG, TEST_CONFIG, VIEWS
-
-    print("=" * 80)
-    print("Test training set sample scan")
-    print("=" * 80)
-    train_samples = create_extract_samples(TRAIN_CONFIG, VIEWS)
-    if train_samples:
-        print(f"\nFirst sample: {train_samples[0]}")
-        print(f"Sample Information: {train_samples[0].get_info()}")
-
-    print("\n" + "=" * 80)
-    print("Test Test Set Sample Scan")
-    print("=" * 80)
-    test_samples = create_extract_samples(TEST_CONFIG, VIEWS)
-    if test_samples:
-        print(f"\nFirst sample: {test_samples[0]}")
-        print(f"Sample Information: {test_samples[0].get_info()}")

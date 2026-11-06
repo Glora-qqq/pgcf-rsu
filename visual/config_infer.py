@@ -100,6 +100,3 @@ def validate_config():
 
     print("✅ Configuration validation passed")
     return True
-
-if __name__ == "__main__":
-    validate_config()

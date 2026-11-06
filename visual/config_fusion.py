@@ -153,7 +153,3 @@ def print_config():
         print(f"  {key}: {value}")
 
     print("\n" + "="*70 + "\n")
-
-if __name__ == '__main__':
-    print_config()
-    validate_config()

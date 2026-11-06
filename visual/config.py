@@ -173,6 +173,3 @@ def print_config():
     print(f"\n📊 Number of training set samples: {len(train_samples)}")
 
     print("=" * 70)
-
-if __name__ == '__main__':
-    print_config()

@@ -78,23 +78,3 @@ GPS_FILE_SUFFIX = '_train_cat_noise.txt'
 WIFO_FEATURE_FILENAME_TEMPLATE = "{vehicle}_{rsf}_wifo_features.npy"
 
 RSF_EXTRINSIC_FILENAME_TEMPLATE = "RSF_position_{scene_id}.txt"
-
-if __name__ == '__main__':
-    print("=" * 60)
-    print("PGCF-RSU Positioning Reasoning Configuration")
-    print("=" * 60)
-    print(f"Test Data Root: {TEST_DATA_ROOT}")
-    print(f"WiFoFeature Root: {TEST_WIFO_FEATURES_ROOT}")
-    print(f"Model Checkpoint Path: {MODEL_CHECKPOINT_PATH}")
-    print(f"Test Output Directory: {TEST_OUTPUT_ROOT}")
-    print(f"\nScene catalog mapping:")
-    for scene, scene_dir in SCENE_DIR_MAPPING.items():
-        print(f"  {scene} -> {scene_dir}")
-    print(f"\nTest Vehicle Statistics:")
-    for scene, vehicles in TEST_VEHICLES.items():
-        print(f"  {scene}: {len(vehicles)} cars")
-    print(f"  Total: {sum(len(v) for v in TEST_VEHICLES.values())} cars")
-    print(f"\nScenarioRSFConfiguration:")
-    for scene, rsfs in SCENE_RSF_CONFIG.items():
-        print(f"  {scene}: {rsfs}")
-    print("=" * 60)

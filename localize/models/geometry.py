@@ -280,27 +280,3 @@ def extract_spatial_features_batch(
         same_road_confidence = same_road_confidence.to(gps_trajectory_6d.device)
 
     return spatial_features, same_road_confidence
-
-if __name__ == '__main__':
-    print("Test Spatial Feature Encoder v4.0-final")
-    print("=" * 50)
-
-    B, T, N_rsf = 2, 10, 3
-    gps_trajectory_6d = torch.randn(B, T, 6) * 100
-    gps_trajectory_6d[..., 3:] = torch.randn(B, T, 3) * 0.1
-
-    rsf_extrinsics_6d = torch.randn(B, N_rsf, 6) * 100
-    rsf_extrinsics_6d[..., 3:] = torch.randn(B, N_rsf, 3) * 0.1
-
-    print("\n[Test1] 12Dimension Feature Testing")
-    spatial_features_car, same_road_confidence_car = extract_spatial_features_batch(
-        gps_trajectory_6d, rsf_extrinsics_6d
-    )
-    print(f"Spatial characteristics: {spatial_features_car.shape}")
-    print(f"Same-route confidence: {same_road_confidence_car.shape}")
-    print(f"  [0] distance_2d: [{spatial_features_car[..., 0].min():.2f}, {spatial_features_car[..., 0].max():.2f}]")
-    print(f"  [1] height_diff: [{spatial_features_car[..., 1].min():.2f}, {spatial_features_car[..., 1].max():.2f}]")
-    print(f"  [11] elevation_angle: [{spatial_features_car[..., 11].min():.2f}, {spatial_features_car[..., 11].max():.2f}]")
-
-    print("\n" + "=" * 50)
-    print("✓ 12Dimension space feature test passed! ")

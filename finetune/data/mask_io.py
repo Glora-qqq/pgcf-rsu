@@ -47,38 +47,3 @@ def load_test_mask(
     mask[force_mask_start:] = 1.0
 
     return mask
-
-def verify_test_mask_loading():
-
-    from config_test import TEST_MASK_ROOT
-
-    print("=" * 60)
-    print("Validation testMaskLoad")
-    print("=" * 60)
-
-    test_scene = 'Scene1'
-    test_rsf = 'RSF1'
-    test_vehicle = 'Car1'
-
-    mask = load_test_mask(
-        mask_root=TEST_MASK_ROOT,
-        scene=test_scene,
-        rsf=test_rsf,
-        vehicle=test_vehicle,
-    )
-
-    print(f"✓ MaskLoading complete")
-    print(f"  Shape: {mask.shape}")
-    print(f"  Data Type: {mask.dtype}")
-    print(f"  ago750Frame:")
-    print(f"    Effective Frames: {np.sum(mask[:750] == 0)}")
-    print(f"    Missing frames: {np.sum(mask[:750] == 1)}")
-    print(f"  After750Frame:")
-    print(f"    Effective Frames: {np.sum(mask[750:] == 0)}")
-    print(f"    Missing frames: {np.sum(mask[750:] == 1)}")
-    print(f"  After750Frame Full1Check: {np.all(mask[750:] == 1)}")
-
-    print("=" * 60)
-
-if __name__ == '__main__':
-    verify_test_mask_loading()

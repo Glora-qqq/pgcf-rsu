@@ -17,5 +17,5 @@ masks-test/**/*.npy
 rgb/outputs/
 localize/predictions/
 weights/
-data/
+/data/
 third_party/dinov2/

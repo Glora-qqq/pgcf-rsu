@@ -1,4 +1,4 @@
-"""由几何特征估计每个路侧单元的观测质量并加权融合。"""
+"""Observation quality for each roadside unit is estimated by geometric features and weighted fusion. """
 
 import torch
 import torch.nn as nn
@@ -56,7 +56,7 @@ class SpatialQualityEstimator(nn.Module):
     def forward(self, spatial_features, scene_names=None):
 
         B, T, N_rsf, D = spatial_features.shape
-        assert D == 12, f"v4.0-final要求统一12维特征，得到{D}维"
+        assert D == 12, f"v4.0-finalRequirements unification12Dimension Features, Get{D}Dimensions"
 
         flat_features = spatial_features.view(-1, 12)
 
@@ -103,9 +103,9 @@ class MultiRSFSpatialQualityFusion(nn.Module):
         if scene_names is not None:
             scene_for_validation = scene_names[0] if isinstance(scene_names, list) else scene_names
             if scene_for_validation == 'Scene1':
-                assert 1 <= N_rsf <= 3, f"Scene1 RSF数应在1–3，实际:{N_rsf}"
+                assert 1 <= N_rsf <= 3, f"Scene1 RSFThe number should be1–3, Actual:{N_rsf}"
             else:
-                assert 1 <= N_rsf <= 4, f"Scene2/3 RSF数应在1–4，实际:{N_rsf}"
+                assert 1 <= N_rsf <= 4, f"Scene2/3 RSFThe number should be1–4, Actual:{N_rsf}"
 
         first_key = list(rsf_data_dict.keys())[0]
         B, T = rsf_data_dict[first_key]['csi_features'].shape[:2]

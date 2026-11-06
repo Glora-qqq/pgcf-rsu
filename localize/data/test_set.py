@@ -1,4 +1,4 @@
-"""组装测试用的多路侧特征、GPS 和几何量。"""
+"""Multi-way side features for assembly testing, GPS and geometric quantities. """
 
 import numpy as np
 import torch
@@ -70,10 +70,10 @@ class MultiRSFPose6DTestDataset(Dataset):
 
         self._validate_data()
 
-        print(f"[{self.scene_name}/{self.vehicle_name}] 数据加载完成:")
-        print(f"  GPS姿态: {self.gps_poses.shape}")
-        print(f"  WiFo特征: {[(rsf, feat.shape) for rsf, feat in self.wifo_features.items()]}")
-        print(f"  RSF外参: {len(self.rsf_extrinsics)} 个RSF")
+        print(f"[{self.scene_name}/{self.vehicle_name}] Data loading complete:")
+        print(f"  GPSPosture: {self.gps_poses.shape}")
+        print(f"  WiFoFeatures: {[(rsf, feat.shape) for rsf, feat in self.wifo_features.items()]}")
+        print(f"  RSFExternal Ginseng: {len(self.rsf_extrinsics)} PieceRSF")
 
     def _load_gps_poses(self) -> np.ndarray:
 
@@ -86,7 +86,7 @@ class MultiRSFPose6DTestDataset(Dataset):
         )
 
         if not gps_file.exists():
-            raise FileNotFoundError(f"GPS文件不存在: {gps_file}")
+            raise FileNotFoundError(f"GPSFile does not exist: {gps_file}")
 
         gps_data = np.loadtxt(gps_file)
 
@@ -151,7 +151,7 @@ class MultiRSFPose6DTestDataset(Dataset):
                             process_noise_ori=process_noise_ori,
                             measurement_noise_ori=measurement_noise_ori
                         )
-                        print(f"  [UKF] {self.vehicle_name}: 6D UKF滤波完成（xyz+姿态）")
+                        print(f"  [UKF] {self.vehicle_name}: 6D UKFFilter complete (xyz+Posture) ")
                     else:
                         positions = gps_poses_6d[:, :3]
                         orientations = gps_poses_6d[:, 3:6]
@@ -164,21 +164,21 @@ class MultiRSFPose6DTestDataset(Dataset):
                         )
 
                         smoothed_poses = np.column_stack([positions_filtered, orientations])
-                        print(f"  [UKF] {self.vehicle_name}: 3D UKF滤波完成（xyz）")
+                        print(f"  [UKF] {self.vehicle_name}: 3D UKFFilter complete (xyz) ")
 
                     return smoothed_poses
 
                 except Exception as e:
-                    print(f"  [UKF] [WARNING] {self.vehicle_name} UKF滤波失败: {e}，使用原始GPS")
+                    print(f"  [UKF] [WARNING] {self.vehicle_name} UKFFailure to filter: {e}, Use originalGPS")
                     return gps_poses_6d
             else:
-                print(f"  [Info] {self.vehicle_name}: 未启用UKF，使用原始GPS")
+                print(f"  [Info] {self.vehicle_name}: Not enabledUKF, Use originalGPS")
                 return gps_poses_6d
 
         try:
             from filterpy.kalman import KalmanFilter
         except ImportError:
-            print(f"  [输入卡尔曼] filterpy未安装，跳过卡尔曼滤波")
+            print(f"  [Enter Kalman] filterpyNot Installed, Skip Kalman filtering")
             return gps_poses_6d
 
         T = len(gps_poses_6d)
@@ -187,8 +187,8 @@ class MultiRSFPose6DTestDataset(Dataset):
         process_noise = self.input_kalman_config.get('process_noise', 0.10)
         measurement_noise = self.input_kalman_config.get('measurement_noise', 1.6)
 
-        print(f"  [输入卡尔曼] {self.vehicle_name}: 应用 (process_noise={process_noise})")
-        print(f"  [输入卡尔曼] ⚠️  只对xy和角度应用，保持z不变（避免破坏高度修正）")
+        print(f"  [Enter Kalman] {self.vehicle_name}: Apply (process_noise={process_noise})")
+        print(f"  [Enter Kalman] ⚠️  Only forxyand angle application, KeepzUnchanged (Avoid breaking height correction) ")
 
         for dim in [0, 1, 3, 4, 5]:
             kf = KalmanFilter(dim_x=2, dim_z=1)
@@ -224,14 +224,14 @@ class MultiRSFPose6DTestDataset(Dataset):
             )
 
             if not wifo_file.exists():
-                raise FileNotFoundError(f"WiFo特征文件不存在: {wifo_file}")
+                raise FileNotFoundError(f"WiFoFeature file does not exist: {wifo_file}")
 
             features = np.load(wifo_file)
 
             if features.ndim != 2 or features.shape[1] != 512:
                 raise ValueError(
-                    f"WiFo特征维度错误: {wifo_file}\n"
-                    f"期望: [T, 512], 实际: {features.shape}"
+                    f"WiFoFeature dimension error: {wifo_file}\n"
+                    f"Expectations: [T, 512], Actual: {features.shape}"
                 )
 
             wifo_features[rsf_name] = features
@@ -250,18 +250,18 @@ class MultiRSFPose6DTestDataset(Dataset):
         )
 
         if not rsf_file.exists():
-            raise FileNotFoundError(f"RSF外参文件不存在: {rsf_file}")
+            raise FileNotFoundError(f"RSFExternal reference file does not exist: {rsf_file}")
 
         try:
             with open(rsf_file, 'r', encoding='utf-8') as f:
                 rsf_dict = json.load(f)
         except Exception as e:
-            raise ValueError(f"RSF外参JSON解析失败: {rsf_file}\n错误: {e}")
+            raise ValueError(f"RSFExternal GinsengJSONParsing failed: {rsf_file}\nError: {e}")
 
         rsf_extrinsics = {}
         for rsf_name in self.rsf_list:
             if rsf_name not in rsf_dict:
-                raise ValueError(f"RSF外参缺少{rsf_name}: {rsf_file}")
+                raise ValueError(f"RSFExternal parameters are missing{rsf_name}: {rsf_file}")
 
             rsf_data = rsf_dict[rsf_name]
             x = float(rsf_data['X'])
@@ -288,19 +288,19 @@ class MultiRSFPose6DTestDataset(Dataset):
             if num_wifo_frames != num_gps_frames:
                 print(
                     f"[WARNING] {self.scene_name}/{self.vehicle_name}/{rsf_name}: "
-                    f"WiFo特征帧数({num_wifo_frames}) != GPS帧数({num_gps_frames})"
+                    f"WiFoNumber of feature frames({num_wifo_frames}) != GPSFrames({num_gps_frames})"
                 )
 
                 min_frames = min(num_wifo_frames, num_gps_frames)
                 self.gps_poses = self.gps_poses[:min_frames]
                 self.wifo_features[rsf_name] = features[:min_frames]
 
-                print(f"  已截断到 {min_frames} 帧")
+                print(f"  truncated to {min_frames} Frame")
 
         if len(self.rsf_extrinsics) != len(self.rsf_list):
             raise ValueError(
-                f"RSF外参数量不匹配: "
-                f"需要{len(self.rsf_list)}, 实际{len(self.rsf_extrinsics)}"
+                f"RSFExternal parameter quantity mismatch: "
+                f"Required{len(self.rsf_list)}, Actual{len(self.rsf_extrinsics)}"
             )
 
     def __len__(self) -> int:
@@ -433,15 +433,15 @@ if __name__ == '__main__':
     )
 
     print("=" * 60)
-    print("测试数据加载器验证")
+    print("Test Data Loader Validation")
     print("=" * 60)
 
     scene_name = 'Scene1'
     vehicle_name = 'Car1'
     rsf_list = SCENE_RSF_CONFIG[scene_name]
 
-    print(f"\n测试车辆: {scene_name}/{vehicle_name}")
-    print(f"RSF列表: {rsf_list}")
+    print(f"\nTest Vehicle: {scene_name}/{vehicle_name}")
+    print(f"RSFList: {rsf_list}")
 
     dataloader = create_test_dataloader(
         test_data_root=TEST_DATA_ROOT,
@@ -452,24 +452,24 @@ if __name__ == '__main__':
         batch_size=8,
     )
 
-    print(f"\n数据集大小: {len(dataloader.dataset)} 帧")
-    print(f"批数量: {len(dataloader)} 批")
+    print(f"\nDataset Size: {len(dataloader.dataset)} Frame")
+    print(f"Batch Quantity: {len(dataloader)} Batch")
 
-    print(f"\n测试前3个批次:")
+    print(f"\nBefore testing3batch:")
     for batch_idx, batch in enumerate(dataloader):
         if batch_idx >= 3:
             break
 
-        print(f"\n批次 {batch_idx + 1}:")
-        print(f"  GPS姿态: {batch['gps_pose'].shape}")
-        print(f"  WiFo特征:")
+        print(f"\nBatch {batch_idx + 1}:")
+        print(f"  GPSPosture: {batch['gps_pose'].shape}")
+        print(f"  WiFoFeatures:")
         for rsf_name, features in batch['wifo_features'].items():
             print(f"    {rsf_name}: {features.shape}")
-        print(f"  RSF外参:")
+        print(f"  RSFExternal Ginseng:")
         for rsf_name, extrinsic in batch['rsf_extrinsics'].items():
             print(f"    {rsf_name}: {extrinsic.shape}")
-        print(f"  帧ID范围: {[m['frame_id'] for m in batch['meta']]}")
+        print(f"  FrameIDScope: {[m['frame_id'] for m in batch['meta']]}")
 
     print("\n" + "=" * 60)
-    print("✓ 数据加载器测试通过！")
+    print("✓ Data loader test passed! ")
     print("=" * 60)

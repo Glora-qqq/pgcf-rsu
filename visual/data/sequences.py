@@ -1,4 +1,4 @@
-"""按时间顺序读取 RGB 帧，供补全模型训练。"""
+"""Read in chronological order RGB Frame, For complementary model training. """
 
 import os
 import numpy as np
@@ -23,12 +23,12 @@ class RGBSequenceDataset(Dataset):
 
         mask_path = get_mask_path(mask_dir, scene, rsf)
         if not os.path.exists(mask_path):
-            raise FileNotFoundError(f"Mask文件不存在: {mask_path}")
+            raise FileNotFoundError(f"MaskFile does not exist: {mask_path}")
 
         self.mask = np.load(mask_path)
 
         assert len(self.mask) == TOTAL_FRAMES,\
-            f"Mask长度错误: {len(self.mask)} != {TOTAL_FRAMES}"
+            f"MaskWrong length: {len(self.mask)} != {TOTAL_FRAMES}"
 
         self.frame_paths = []
         for frame_id in range(1, TOTAL_FRAMES + 1):
@@ -62,7 +62,7 @@ class RGBSequenceDataset(Dataset):
             img_path = self.frame_paths[idx]
 
             if not os.path.exists(img_path):
-                print(f"⚠️ 警告: 图像文件不存在 {img_path}")
+                print(f"⚠️ Warning: Image file does not exist {img_path}")
                 return None, frame_id, True
 
             try:
@@ -71,7 +71,7 @@ class RGBSequenceDataset(Dataset):
                 return image, frame_id, False
 
             except Exception as e:
-                print(f"⚠️ 警告: 图像加载失败 {img_path}: {e}")
+                print(f"⚠️ Warning: Image failed to load {img_path}: {e}")
                 return None, frame_id, True
 
     def get_sample_info(self):
@@ -123,25 +123,25 @@ def create_sample_info(image_dir, mask_dir):
             info = dataset.get_sample_info()
             sample_infos.append(info)
         except Exception as e:
-            print(f"⚠️ 警告: 无法创建样本 {scene}_{rsf}_{view}: {e}")
+            print(f"⚠️ Warning: Unable to create sample {scene}_{rsf}_{view}: {e}")
 
     return sample_infos
 
 def test_dataset():
 
     print("=" * 70)
-    print("测试RGBSequenceDataset")
+    print("TestRGBSequenceDataset")
     print("=" * 70)
 
     samples = get_all_samples(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN)
 
     if len(samples) == 0:
-        print("❌ 错误: 没有找到任何样本")
-        print(f"请检查mask目录: {MASK_DIR_TRAIN}")
+        print("❌ Error: No samples found")
+        print(f"Please checkmaskContents: {MASK_DIR_TRAIN}")
         return
 
-    print(f"\n找到 {len(samples)} 个样本")
-    print(f"第一个样本: {samples[0]}")
+    print(f"\nFound {len(samples)} samples")
+    print(f"First sample: {samples[0]}")
 
     scene, rsf, view = samples[0]
     dataset = RGBSequenceDataset(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN, scene, rsf, view)
@@ -149,44 +149,44 @@ def test_dataset():
     print(f"\n{dataset}")
 
     info = dataset.get_sample_info()
-    print("\n样本详细信息:")
-    print(f"  场景: {info['scene']}")
+    print("\nSample Details:")
+    print(f"  Scenario: {info['scene']}")
     print(f"  RSF: {info['rsf']}")
-    print(f"  视角: {info['view']}")
-    print(f"  总帧数: {info['total_frames']}")
-    print(f"  有效帧数: {info['valid_frames']}")
-    print(f"  缺失帧数: {info['missing_frames']}")
-    print(f"  缺失率: {info['missing_rate']:.2%}")
-    print(f"  缺失区间: {info['missing_ranges']}")
+    print(f"  Angle of View: {info['view']}")
+    print(f"  Total frames: {info['total_frames']}")
+    print(f"  Effective Frames: {info['valid_frames']}")
+    print(f"  Missing frames: {info['missing_frames']}")
+    print(f"  Missing rate: {info['missing_rate']:.2%}")
+    print(f"  Missing interval: {info['missing_ranges']}")
 
-    print("\n测试读取前10帧:")
+    print("\nBefore test read10Frame:")
     for i in range(10):
         image, frame_id, is_missing = dataset[i]
 
         if is_missing:
-            print(f"  帧 {frame_id}: ❌ 缺失")
+            print(f"  Frame {frame_id}: ❌ Missing")
         else:
-            print(f"  帧 {frame_id}: ✅ 有效, shape={image.shape}")
+            print(f"  Frame {frame_id}: ✅ Active, shape={image.shape}")
 
     if len(info['missing_ranges']) > 0:
         first_missing_start, first_missing_end = info['missing_ranges'][0]
-        print(f"\n测试第一个缺失区间 [{first_missing_start}, {first_missing_end}]:")
+        print(f"\nTest first missing interval [{first_missing_start}, {first_missing_end}]:")
 
         image, frame_id, is_missing = dataset[first_missing_start - 2]
-        print(f"  帧 {frame_id} (缺失前): {'❌ 缺失' if is_missing else '✅ 有效'}")
+        print(f"  Frame {frame_id} (Before deletion): {'❌ Missing' if is_missing else '✅ Active'}")
 
         image, frame_id, is_missing = dataset[first_missing_start - 1]
-        print(f"  帧 {frame_id} (缺失开始): {'❌ 缺失' if is_missing else '✅ 有效'}")
+        print(f"  Frame {frame_id} (Missing start): {'❌ Missing' if is_missing else '✅ Active'}")
 
         image, frame_id, is_missing = dataset[first_missing_end - 1]
-        print(f"  帧 {frame_id} (缺失结束): {'❌ 缺失' if is_missing else '✅ 有效'}")
+        print(f"  Frame {frame_id} (Missing End): {'❌ Missing' if is_missing else '✅ Active'}")
 
         if first_missing_end < TOTAL_FRAMES:
             image, frame_id, is_missing = dataset[first_missing_end]
-            print(f"  帧 {frame_id} (缺失后): {'❌ 缺失' if is_missing else '✅ 有效'}")
+            print(f"  Frame {frame_id} (After Missing): {'❌ Missing' if is_missing else '✅ Active'}")
 
     print("\n" + "=" * 70)
-    print("统计所有样本")
+    print("Count all samples")
     print("=" * 70)
 
     all_infos = create_sample_info(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN)
@@ -195,23 +195,23 @@ def test_dataset():
     total_valid = sum(info['valid_frames'] for info in all_infos)
     total_missing = sum(info['missing_frames'] for info in all_infos)
 
-    print(f"\n样本数: {len(all_infos)}")
-    print(f"总帧数: {total_frames}")
-    print(f"有效帧数: {total_valid}")
-    print(f"缺失帧数: {total_missing}")
-    print(f"总缺失率: {total_missing/total_frames:.2%}")
+    print(f"\nNumber of samples: {len(all_infos)}")
+    print(f"Total frames: {total_frames}")
+    print(f"Effective Frames: {total_valid}")
+    print(f"Missing frames: {total_missing}")
+    print(f"Total Missing Rate: {total_missing/total_frames:.2%}")
 
-    print("\n按场景统计:")
+    print("\nStatistics by Scenario:")
     for scene in SCENES:
         scene_infos = [info for info in all_infos if info['scene'] == scene]
         if len(scene_infos) > 0:
             scene_total = sum(info['total_frames'] for info in scene_infos)
             scene_missing = sum(info['missing_frames'] for info in scene_infos)
-            print(f"  {scene}: {len(scene_infos)} 样本, "
-                  f"{scene_missing}/{scene_total} 缺失 "
+            print(f"  {scene}: {len(scene_infos)} Sample, "
+                  f"{scene_missing}/{scene_total} Missing "
                   f"({scene_missing/scene_total:.1%})")
 
-    print("\n✅ 数据集测试完成！")
+    print("\n✅ Dataset Test Complete! ")
 
 if __name__ == '__main__':
     test_dataset()

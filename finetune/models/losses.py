@@ -1,4 +1,4 @@
-"""只在有效 patch 上计算 CSI 重建损失。"""
+"""Valid only on patch Calculate Up CSI Reconstruction Losses. """
 
 import torch
 import torch.nn as nn

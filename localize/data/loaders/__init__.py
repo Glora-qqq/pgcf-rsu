@@ -1,4 +1,4 @@
-"""导出 GPS、真值、路侧单元和 CSI 特征的读取函数。"""
+"""Export GPS, True value, Roadside units and CSI Read function of the feature. """
 
 from .ground_truth import (
     load_trajectory_txt,

@@ -1,4 +1,4 @@
-"""提取 DINOv2 特征并训练缺失帧补全模型。"""
+"""Extract DINOv2 Feature and Train Missing Frame Completion Model. """
 
 import os
 import sys
@@ -89,7 +89,7 @@ class DynamicFeatureDataset(Dataset):
         self.backbone = backbone
 
         self.samples = get_all_samples(image_dir, mask_dir)
-        print(f"找到 {len(self.samples)} 个样本")
+        print(f"Found {len(self.samples)} samples")
 
     def __len__(self):
         return len(self.samples)
@@ -173,7 +173,7 @@ def train_epoch(model, dataloader, optimizer, device):
     total_mask_loss = 0
     total_valid_loss = 0
 
-    pbar = tqdm(dataloader, desc="🔥 训练中", unit="batch", ncols=120, leave=False)
+    pbar = tqdm(dataloader, desc="🔥 In Training", unit="batch", ncols=120, leave=False)
 
     batch_start = time.time()
     for batch_idx, (features, mask, _) in enumerate(pbar):
@@ -223,7 +223,7 @@ def validate_epoch(model, dataloader, device):
     total_mask_loss = 0
     total_valid_loss = 0
 
-    pbar = tqdm(dataloader, desc="✅ 验证中", unit="batch", ncols=120, leave=False)
+    pbar = tqdm(dataloader, desc="✅ Verifying", unit="batch", ncols=120, leave=False)
     for features, mask, _ in pbar:
         features = features.to(device)
         mask = mask.to(device)
@@ -248,14 +248,14 @@ def validate_epoch(model, dataloader, device):
 def stage1_infer(image_dir, mask_dir, output_dir, gpu_ids=None):
 
     print("\n" + "="*80)
-    print("🔥 阶段1: DINOv2特征提取（多GPU并行）")
+    print("🔥 Phase1: DINOv2Feature extraction (MultipleGPUParallel) ")
     print("="*80)
 
     if gpu_ids is None:
         gpu_ids = GPU_IDS
 
-    print(f"📌 使用GPU: {gpu_ids}")
-    print(f"📌 批处理大小: {BATCH_SIZE_PER_GPU} 帧/GPU")
+    print(f"📌 UseGPU: {gpu_ids}")
+    print(f"📌 Batch size: {BATCH_SIZE_PER_GPU} Frame/GPU")
 
     samples = []
 
@@ -280,7 +280,7 @@ def stage1_infer(image_dir, mask_dir, output_dir, gpu_ids=None):
                         for view in VIEWS:
                             samples.append((scene, rsf, view))
 
-    print(f"📊 找到 {len(samples)} 个样本")
+    print(f"📊 Found {len(samples)} samples")
 
     scenes_count = {}
     for scene, rsf, view in samples:
@@ -289,12 +289,12 @@ def stage1_infer(image_dir, mask_dir, output_dir, gpu_ids=None):
         scenes_count[scene]['rsfs'].add(rsf)
         scenes_count[scene]['views'].add(view)
 
-    print(f"📋 样本分布:")
+    print(f"📋 Sample Distribution:")
     for scene in sorted(scenes_count.keys()):
         rsfs = len(scenes_count[scene]['rsfs'])
         views = len(scenes_count[scene]['views'])
         total = rsfs * views
-        print(f"  {scene}: {rsfs} RSFs × {views} views = {total} samples")
+        print(f"  {scene}: {rsfs} RSFs x {views} views = {total} samples")
 
     completed = 0
     pending_samples = []
@@ -306,23 +306,23 @@ def stage1_infer(image_dir, mask_dir, output_dir, gpu_ids=None):
             pending_samples.append((scene, rsf, view))
 
     if completed > 0:
-        print(f"✅ 已完成: {completed}/{len(samples)} 样本")
+        print(f"✅ Completed: {completed}/{len(samples)} Sample")
 
     if len(pending_samples) == 0:
-        print(f"🎉 所有特征已提取完成！")
+        print(f"🎉 All features have been extracted! ")
         return
 
-    print(f"⏳ 待处理: {len(pending_samples)} 个样本")
-    print(f"📦 输出目录: {output_dir}")
+    print(f"⏳ Pending: {len(pending_samples)} samples")
+    print(f"📦 Output directory: {output_dir}")
 
     if len(gpu_ids) > 1 and ENABLE_MULTI_GPU:
-        print(f"\n⚡ 启用多GPU并行加速 ({len(gpu_ids)} GPUs)")
+        print(f"\n⚡ Enable MultipleGPUParallel acceleration ({len(gpu_ids)} GPUs)")
         infer_multi_gpu(pending_samples, image_dir, mask_dir, output_dir, gpu_ids)
     else:
-        print(f"\n🔧 单GPU模式")
+        print(f"\n🔧 SingleGPUMode")
         infer_single_gpu(pending_samples, image_dir, mask_dir, output_dir, gpu_ids[0])
 
-    print(f"\n✅ 阶段1完成！特征已保存到: {output_dir}")
+    print(f"\n✅ Phase1Done! Feature saved to: {output_dir}")
 
 def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
 
@@ -330,10 +330,10 @@ def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
     from concurrent.futures import ThreadPoolExecutor
     from queue import Queue
 
-    print(f"[GPU{gpu_id}] 🚀 进程启动")
+    print(f"[GPU{gpu_id}] 🚀 Process startup")
     device = torch.device(f"cuda:{gpu_id}")
 
-    print(f"[GPU{gpu_id}] 📦 加载DINOv2模型...")
+    print(f"[GPU{gpu_id}] 📦 LoadDINOv2Model...")
     start_time = time.time()
 
     from models.backbone import DINOv2FeatureExtractor
@@ -345,9 +345,9 @@ def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
     )
 
     load_time = time.time() - start_time
-    print(f"[GPU{gpu_id}] ✅ 模型加载完成 ({load_time:.1f}s)")
-    print(f"[GPU{gpu_id}] 🔥 开始提取 {len(samples)} 个样本")
-    print(f"[GPU{gpu_id}] 💡 预加载优化: 6线程并行，3样本预加载队列")
+    print(f"[GPU{gpu_id}] ✅ Model loading complete ({load_time:.1f}s)")
+    print(f"[GPU{gpu_id}] 🔥 Start fetching {len(samples)} samples")
+    print(f"[GPU{gpu_id}] 💡 Preload optimizations: 6Thread Parallelism, 3Sample Preload Queue")
 
     def load_dataset(scene, rsf, view):
 
@@ -375,7 +375,7 @@ def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
             _, current_future = prefetch_queue.get()
             rgb_dataset = current_future.result()
             load_time = time.time() - load_start
-            print(f"加载:{load_time:.2f}s ", end='', flush=True)
+            print(f"Load:{load_time:.2f}s ", end='', flush=True)
 
             if next_to_load < len(samples):
                 future = executor.submit(load_dataset, *samples[next_to_load])
@@ -385,7 +385,7 @@ def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
             extract_start = time.time()
             features, mask = extractor.extract_sequence(rgb_dataset, show_progress=False)
             extract_time = time.time() - extract_start
-            print(f"提取:{extract_time:.1f}s ", end='', flush=True)
+            print(f"Extract:{extract_time:.1f}s ", end='', flush=True)
 
             save_start = time.time()
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -401,9 +401,9 @@ def infer_single_gpu(samples, image_dir, mask_dir, output_dir, gpu_id):
             sample_time = time.time() - sample_start
 
             gpu_util = (extract_time / sample_time) * 100
-            print(f"保存:{save_time:.1f}s | 总:{sample_time:.1f}s | GPU利用:{gpu_util:.0f}% ✅")
+            print(f"Save:{save_time:.1f}s | Total:{sample_time:.1f}s | GPUUse:{gpu_util:.0f}% ✅")
 
-    print(f"[GPU{gpu_id}] 🎉 全部完成！")
+    print(f"[GPU{gpu_id}] 🎉 All done! ")
 
 def infer_multi_gpu(samples, image_dir, mask_dir, output_dir, gpu_ids):
 
@@ -415,12 +415,12 @@ def infer_multi_gpu(samples, image_dir, mask_dir, output_dir, gpu_ids):
         gpu_idx = idx % num_gpus
         samples_per_gpu[gpu_idx].append(sample)
 
-    print(f"📊 样本分配:")
+    print(f"📊 Sample Allocation:")
     for gpu_idx, gpu_id in enumerate(gpu_ids):
-        print(f"  GPU {gpu_id}: {len(samples_per_gpu[gpu_idx])} 样本")
+        print(f"  GPU {gpu_id}: {len(samples_per_gpu[gpu_idx])} Sample")
 
-    print(f"\n⚙️ 启动 {num_gpus} 个GPU进程...")
-    print(f"⏳ 每个进程需要加载DINOv2模型（约10-15秒），请耐心等待...\n")
+    print(f"\n⚙️ Start {num_gpus} PieceGPUProcess...")
+    print(f"⏳ Each process needs to be loadedDINOv2Model (Approx.10-15Seconds) , Please be patient...\n")
 
     mp.set_start_method('spawn', force=True)
     processes = []
@@ -434,11 +434,11 @@ def infer_multi_gpu(samples, image_dir, mask_dir, output_dir, gpu_ids):
             args=(samples_per_gpu[gpu_idx], image_dir, mask_dir, output_dir, gpu_id)
         )
         p.start()
-        print(f"✓ GPU{gpu_id} 进程已启动")
+        print(f"✓ GPU{gpu_id} Process started")
         processes.append(p)
 
     print(f"\n{'='*80}")
-    print(f"💡 提示: 初次启动时，每个GPU需要独立加载模型，会有延迟")
+    print(f"💡 Tip: At initial startup, EachGPUModel needs to be loaded independently, There will be delays")
     print(f"{'='*80}\n")
 
     for p in processes:
@@ -447,7 +447,7 @@ def infer_multi_gpu(samples, image_dir, mask_dir, output_dir, gpu_ids):
 def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
 
     print("\n" + "="*80)
-    print("🚀 阶段2: Transformer训练")
+    print("🚀 Phase2: TransformerTraining")
     print("="*80)
 
     if gpu_ids is None:
@@ -458,14 +458,14 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
     use_multi_gpu = len(gpu_ids) > 1
 
     if use_multi_gpu:
-        print(f"📌 使用多GPU: {gpu_ids} (DataParallel模式)")
-        print(f"📌 主GPU: {gpu_ids[0]}")
+        print(f"📌 Used a lotGPU: {gpu_ids} (DataParallelMode)")
+        print(f"📌 MainGPU: {gpu_ids[0]}")
     else:
-        print(f"📌 使用单GPU: {gpu_ids[0]}")
+        print(f"📌 Usage FormGPU: {gpu_ids[0]}")
 
-    print(f"📌 批处理大小: {TRANSFORMER_BATCH_SIZE} 序列/batch")
+    print(f"📌 Batch size: {TRANSFORMER_BATCH_SIZE} Sequence/batch")
 
-    print("\n📦 加载预提取特征...")
+    print("\n📦 Load Prefetch Features...")
     dataset = TransformerTrainDataset(
         IMAGE_DIR_TRAIN,
         MASK_DIR_TRAIN,
@@ -480,10 +480,10 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
         dataset, [train_size, val_size]
     )
 
-    print(f"📊 数据集统计:")
-    print(f"  总样本: {len(dataset)}")
-    print(f"  训练集: {train_size} 样本")
-    print(f"  验证集: {val_size} 样本")
+    print(f"📊 Dataset Statistics:")
+    print(f"  Total Samples: {len(dataset)}")
+    print(f"  Training Sets: {train_size} Sample")
+    print(f"  Validation Set: {val_size} Sample")
 
     train_loader = DataLoader(
         train_subset,
@@ -498,23 +498,23 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
         num_workers=0
     )
 
-    print("\n🧠 创建Transformer模型...")
+    print("\n🧠 CreateTransformerModel...")
     model = create_model()
     model = model.to(device)
 
     if use_multi_gpu:
-        print(f"🔗 启用DataParallel: {len(gpu_ids)}个GPU并行训练")
+        print(f"🔗 EnableDataParallel: {len(gpu_ids)}PieceGPUParallel training")
         model = nn.DataParallel(model, device_ids=gpu_ids)
 
     total_params, trainable_params, param_size = count_parameters(
         model.module if use_multi_gpu else model
     )
-    print(f"📊 模型参数:")
-    print(f"  总参数: {total_params:,}")
-    print(f"  可训练: {trainable_params:,}")
-    print(f"  大小: {param_size:.2f} MB")
+    print(f"📊 Model Parameters:")
+    print(f"  Total Parameters: {total_params:,}")
+    print(f"  Trainable: {trainable_params:,}")
+    print(f"  Size: {param_size:.2f} MB")
     if use_multi_gpu:
-        print(f"  每GPU显存: ~{param_size / len(gpu_ids):.1f} MB (模型) + 动态batch数据")
+        print(f"  EveryGPUGraphics Memory: ~{param_size / len(gpu_ids):.1f} MB (Model) + DynamicbatchData")
 
     optimizer = optim.Adam(
         model.parameters(),
@@ -523,11 +523,11 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
 
     import time
     print("\n" + "=" * 80)
-    print("🎯 开始训练")
+    print("🎯 Start training")
     print("=" * 80)
-    print(f"📊 训练集: {train_size} | 验证集: {val_size} | Batch: {TRANSFORMER_BATCH_SIZE}")
-    print(f"💾 模型: {total_params:,}参数 ({param_size:.1f}MB)")
-    print(f"🏋️ Epochs: {TRANSFORMER_EPOCHS} | 学习率: {TRANSFORMER_LEARNING_RATE}")
+    print(f"📊 Training Sets: {train_size} | Validation Set: {val_size} | Batch: {TRANSFORMER_BATCH_SIZE}")
+    print(f"💾 Model: {total_params:,}Parameter ({param_size:.1f}MB)")
+    print(f"🏋️ Epochs: {TRANSFORMER_EPOCHS} | Learning Rate: {TRANSFORMER_LEARNING_RATE}")
     print("=" * 80)
 
     best_val_loss = float('inf')
@@ -560,9 +560,9 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
             mem_reserved = torch.cuda.memory_reserved(device) / 1024**3
             gpu_mem = f" | 🎮 GPU: {mem_allocated:.2f}GB/{mem_reserved:.2f}GB"
 
-        print(f"\n📈 训练: Loss={train_loss:.4f} (mask={train_mask_loss:.4f}, valid={train_valid_loss:.4f}) | ⏱️ {train_time:.1f}s")
-        print(f"📉 验证: Loss={val_loss:.4f} (mask={val_mask_loss:.4f}, valid={val_valid_loss:.4f}) | ⏱️ {val_time:.1f}s")
-        print(f"⚡ Epoch总耗时: {epoch_time:.1f}s | LR: {optimizer.param_groups[0]['lr']:.6f}{gpu_mem}")
+        print(f"\n📈 Training: Loss={train_loss:.4f} (mask={train_mask_loss:.4f}, valid={train_valid_loss:.4f}) | ⏱️ {train_time:.1f}s")
+        print(f"📉 Verify: Loss={val_loss:.4f} (mask={val_mask_loss:.4f}, valid={val_valid_loss:.4f}) | ⏱️ {val_time:.1f}s")
+        print(f"⚡ EpochTotal time spent: {epoch_time:.1f}s | LR: {optimizer.param_groups[0]['lr']:.6f}{gpu_mem}")
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -584,7 +584,7 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
                 }
             }
             torch.save(checkpoint, TRANSFORMER_BEST_MODEL)
-            print(f"💾 保存最佳模型 → {TRANSFORMER_BEST_MODEL} (val_loss: {val_loss:.4f} ⬇️)")
+            print(f"💾 Save the best model → {TRANSFORMER_BEST_MODEL} (val_loss: {val_loss:.4f} ⬇️)")
 
         if epoch % 10 == 0:
             checkpoint_path = os.path.join(
@@ -592,20 +592,20 @@ def stage2_train_transformer(feature_cache_dir, gpu_ids=None):
                 f'checkpoint_epoch{epoch}.pth'
             )
             torch.save(checkpoint, checkpoint_path)
-            print(f"💾 保存checkpoint: epoch{epoch}")
+            print(f"💾 Savecheckpoint: epoch{epoch}")
 
     print("\n" + "=" * 80)
-    print(f"✅ 阶段2完成！最佳验证损失: {best_val_loss:.4f}")
-    print(f"💾 模型已保存: {TRANSFORMER_BEST_MODEL}")
+    print(f"✅ Phase2Done! Best Validation Loss: {best_val_loss:.4f}")
+    print(f"💾 Model saved: {TRANSFORMER_BEST_MODEL}")
     print("=" * 80)
 
 def train_mode(backbone):
 
     print("\n" + "=" * 80)
-    print("🚀 两阶段训练流程")
+    print("🚀 Two-stage training process")
     print("=" * 80)
-    print("📌 阶段1: DINOv2特征提取（多GPU并行）")
-    print("📌 阶段2: Transformer训练（单GPU）")
+    print("📌 Phase1: DINOv2Feature extraction (MultipleGPUParallel) ")
+    print("📌 Phase2: TransformerTraining (SingleGPU) ")
     print("=" * 80)
 
     feature_cache_dir = os.path.join(BASE_DIR, 'feature_cache')
@@ -623,13 +623,13 @@ def train_mode(backbone):
     )
 
     print("\n" + "=" * 80)
-    print("🎉 两阶段训练全部完成！")
+    print("🎉 Two-stage training completed! ")
     print("=" * 80)
 
 def extract_mode(backbone, dataset='train'):
 
     print("=" * 70)
-    print("模式: 端到端提取环境特征")
+    print("Mode: End-to-end extraction of environmental characteristics")
     print("=" * 70)
 
     device = torch.device(DEVICE if torch.cuda.is_available() else 'cpu')
@@ -643,10 +643,10 @@ def extract_mode(backbone, dataset='train'):
         mask_dir = MASK_DIR_TEST
         output_dir = ENV_FEATURE_DIR_TEST
 
-    print(f"\n加载Transformer模型: {TRANSFORMER_BEST_MODEL}")
+    print(f"\nLoadTransformerModel: {TRANSFORMER_BEST_MODEL}")
 
     if not os.path.exists(TRANSFORMER_BEST_MODEL):
-        print("⚠️  Transformer模型不存在，将只提取DINOv2特征（不补全）")
+        print("⚠️  TransformerModel does not exist, will only fetchDINOv2Features (Incomplete) ")
         transformer = None
     else:
         checkpoint = torch.load(TRANSFORMER_BEST_MODEL, map_location=device)
@@ -657,13 +657,13 @@ def extract_mode(backbone, dataset='train'):
         transformer = transformer.to(device)
         transformer.eval()
 
-        print(f"✅ 模型加载成功 (epoch {checkpoint.get('epoch', 'N/A')})")
+        print(f"✅ Model loaded successfully (epoch {checkpoint.get('epoch', 'N/A')})")
 
-    print("\n获取样本列表...")
+    print("\nGet Sample List...")
     samples = get_all_samples(image_dir, mask_dir)
-    print(f"找到 {len(samples)} 个样本")
+    print(f"Found {len(samples)} samples")
 
-    print("\n开始提取...")
+    print("\nStart fetching...")
     print("=" * 70)
 
     start_time = time.time()
@@ -671,7 +671,7 @@ def extract_mode(backbone, dataset='train'):
     failed_samples = []
     total_missing = 0
 
-    for scene, rsf, view in tqdm(samples, desc="提取进度"):
+    for scene, rsf, view in tqdm(samples, desc="Fetch progress"):
         try:
             rgb_dataset = RGBSequenceDataset(image_dir, mask_dir, scene, rsf, view)
 
@@ -733,16 +733,16 @@ def extract_mode(backbone, dataset='train'):
     elapsed_time = time.time() - start_time
 
     print("\n" + "=" * 70)
-    print("提取完成!")
+    print("Extraction complete!")
     print("=" * 70)
-    print(f"\n统计:")
-    print(f"  成功: {success_count}/{len(samples)}")
-    print(f"  失败: {len(failed_samples)}/{len(samples)}")
-    print(f"  总缺失帧: {total_missing}")
+    print(f"\nStatistics:")
+    print(f"  Success: {success_count}/{len(samples)}")
+    print(f"  Failed: {len(failed_samples)}/{len(samples)}")
+    print(f"  Total Missing Frames: {total_missing}")
     if success_count > 0:
-        print(f"  平均缺失: {total_missing/success_count:.1f} 帧/样本")
-    print(f"  用时: {elapsed_time/60:.1f} 分钟")
-    print(f"\n输出目录: {output_dir}")
+        print(f"  Average Missing: {total_missing/success_count:.1f} Frame/Sample")
+    print(f"  Elapsed time: {elapsed_time/60:.1f} Minutes")
+    print(f"\nOutput directory: {output_dir}")
     print("=" * 70)
 
 def verify_mode(dataset='train'):
@@ -753,12 +753,12 @@ def verify_mode(dataset='train'):
         output_dir = ENV_FEATURE_DIR_TEST
 
     print("=" * 70)
-    print("验证输出结构")
+    print("Verify output structure")
     print("=" * 70)
-    print(f"\n输出目录: {output_dir}\n")
+    print(f"\nOutput directory: {output_dir}\n")
 
     if not os.path.exists(output_dir):
-        print("❌ 输出目录不存在")
+        print("❌ Output directory does not exist")
         return
 
     total_files = 0
@@ -794,37 +794,37 @@ def verify_mode(dataset='train'):
                         norms = np.linalg.norm(features, axis=1)
                         zero_frames = (norms < 1e-6).sum()
 
-                        status = "补全" if completed else "DINOv2"
+                        status = "Completion" if completed else "DINOv2"
                         if zero_frames > 0:
-                            print(f"    ⚠️  {filename} ({size:.2f} MB) - {status} - 有{zero_frames}零帧")
+                            print(f"    ⚠️  {filename} ({size:.2f} MB) - {status} - Yes{zero_frames}Zero frames")
                         else:
                             print(f"    ✅ {filename} ({size:.2f} MB) - {status}")
 
                         total_files += 1
                         total_size += size
                     except:
-                        print(f"    ❌ {filename} - 加载失败")
+                        print(f"    ❌ {filename} - Loading failed")
                 else:
-                    print(f"    ❌ {filename} - 不存在")
+                    print(f"    ❌ {filename} - Absent")
 
-    print(f"\n总计: {total_files} 文件, {total_size:.2f} MB")
+    print(f"\nTotal: {total_files} File, {total_size:.2f} MB")
     print("=" * 70)
 
 def main():
 
     import argparse
 
-    parser = argparse.ArgumentParser(description='环境特征提取统一脚本')
+    parser = argparse.ArgumentParser(description='Unified script for environmental feature extraction')
     parser.add_argument('--mode', type=str, required=True,
                        choices=['train', 'extract', 'verify'],
-                       help='运行模式: train=训练Transformer, extract=提取特征, verify=验证输出')
+                       help='Operating mode: train=TrainingTransformer, extract=Extract features, verify=Validate Output')
     parser.add_argument('--dataset', type=str, default='train',
                        choices=['train', 'test'],
-                       help='数据集: train或test')
+                       help='Dataset: trainortest')
     parser.add_argument('--device', type=str, default=None,
-                       help='设备（默认使用config.py中的DEVICE）')
+                       help='Equipment (Use by defaultconfig.pyinDEVICE) ')
     parser.add_argument('--batch-size', type=int, default=None,
-                       help='批处理大小（默认使用config.py）')
+                       help='Batch size (Use by defaultconfig.py) ')
 
     args = parser.parse_args()
 
@@ -838,13 +838,13 @@ def main():
         verify_mode(args.dataset)
         return
 
-    print("\n加载DINOv2模型（预训练，用于特征提取）...")
+    print("\nLoadDINOv2Model (Pre-training, Used for feature extraction) ...")
     backbone = DINOv2FeatureExtractor(
         weights_path=DINOV2_DEFAULT_WEIGHTS,
         device=device,
         batch_size=batch_size
     )
-    print("✅ DINOv2加载完成\n")
+    print("✅ DINOv2Loading complete\n")
 
     if args.mode == 'train':
         train_mode(backbone)

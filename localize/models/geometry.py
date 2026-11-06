@@ -1,4 +1,4 @@
-"""把目标与路侧单元的距离、角度和道路关系编成 12 维几何特征。"""
+"""Distance the target from the roadside unit, Angle and Road Relationship Formatting 12 Dimension geometry. """
 
 import torch
 import numpy as np
@@ -282,7 +282,7 @@ def extract_spatial_features_batch(
     return spatial_features, same_road_confidence
 
 if __name__ == '__main__':
-    print("测试空间特征编码器 v4.0-final")
+    print("Test Spatial Feature Encoder v4.0-final")
     print("=" * 50)
 
     B, T, N_rsf = 2, 10, 3
@@ -292,15 +292,15 @@ if __name__ == '__main__':
     rsf_extrinsics_6d = torch.randn(B, N_rsf, 6) * 100
     rsf_extrinsics_6d[..., 3:] = torch.randn(B, N_rsf, 3) * 0.1
 
-    print("\n[测试1] 12维特征测试")
+    print("\n[Test1] 12Dimension Feature Testing")
     spatial_features_car, same_road_confidence_car = extract_spatial_features_batch(
         gps_trajectory_6d, rsf_extrinsics_6d
     )
-    print(f"空间特征: {spatial_features_car.shape}")
-    print(f"同路置信度: {same_road_confidence_car.shape}")
+    print(f"Spatial characteristics: {spatial_features_car.shape}")
+    print(f"Same-route confidence: {same_road_confidence_car.shape}")
     print(f"  [0] distance_2d: [{spatial_features_car[..., 0].min():.2f}, {spatial_features_car[..., 0].max():.2f}]")
     print(f"  [1] height_diff: [{spatial_features_car[..., 1].min():.2f}, {spatial_features_car[..., 1].max():.2f}]")
     print(f"  [11] elevation_angle: [{spatial_features_car[..., 11].min():.2f}, {spatial_features_car[..., 11].max():.2f}]")
 
     print("\n" + "=" * 50)
-    print("✓ 12维空间特征测试通过！")
+    print("✓ 12Dimension space feature test passed! ")

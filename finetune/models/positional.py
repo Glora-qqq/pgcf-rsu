@@ -1,4 +1,4 @@
-"""CSI patch 的三维正余弦位置编码。"""
+"""CSI patch 3D cosine position encoding. """
 
 import torch
 import torch.nn as nn

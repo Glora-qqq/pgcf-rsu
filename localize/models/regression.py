@@ -1,4 +1,4 @@
-"""以 GPS 为先验，预测六维修正量和逐维系数。"""
+"""in GPS Is a priori, Predict six-dimensional correction amount and dimensional coefficient. """
 
 import torch
 import torch.nn as nn
@@ -62,7 +62,7 @@ class PoseRegressor(nn.Module):
         self.adaptive_filter = None
         if ADAPTIVE_FILTER_AVAILABLE and getattr(config, 'use_output_adaptive_filter', False):
             self.adaptive_filter = VehicleAdaptiveOutputFilter(config)
-            print("[PoseRegressor] 输出端滤波已打开")
+            print("[PoseRegressor] Output filtering is on")
 
     def forward(self, temporal_features, gps_poses_6d, vehicle_names=None):
 
@@ -96,7 +96,7 @@ class PoseRegressor(nn.Module):
             try:
                 final_poses_6d = self.adaptive_filter.apply(corrected_poses_6d, vehicle_names)
             except Exception as e:
-                print(f"[WARNING] 车辆自适应滤波失败: {e}")
+                print(f"[WARNING] Vehicle adaptive filtering failed: {e}")
                 final_poses_6d = corrected_poses_6d
 
         final_positions = final_poses_6d[:, :, :3]

@@ -1,4 +1,4 @@
-"""把 CSI 切成三维 patch 并嵌入。"""
+"""Put the CSI Cut into three dimensions patch and embed. """
 
 import torch
 import torch.nn as nn

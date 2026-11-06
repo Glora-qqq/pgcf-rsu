@@ -1,4 +1,4 @@
-"""消融用的拼接投影融合，不作为默认路径。"""
+"""Stitching projection fusion for ablation, Not used as default path. """
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class ConcatProjCSIFusion(nn.Module):
         )
         print(
             f"[INFO] ConcatProjCSIFusion: pad N_max={self.n_rsu_max}, "
-            f"{in_dim}→{hidden}→{self.wifo_dim}（无空间质量评分）"
+            f"{in_dim}→{hidden}→{self.wifo_dim} (No Space Quality Score) "
         )
 
     def forward(
@@ -38,17 +38,17 @@ class ConcatProjCSIFusion(nn.Module):
 
         keys = sorted(rsf_data_dict.keys())
         if not keys:
-            raise ValueError("rsf_data_dict 为空")
+            raise ValueError("rsf_data_dict Is Empty")
 
         stacked = torch.stack(
             [rsf_data_dict[k]["csi_features"] for k in keys], dim=2
         )
         bsz, seq_len, n_rsu, dim = stacked.shape
         if dim != self.wifo_dim:
-            raise ValueError(f"CSI 维 {dim} != wifo_dim {self.wifo_dim}")
+            raise ValueError(f"CSI Dimensions {dim} != wifo_dim {self.wifo_dim}")
         if n_rsu > self.n_rsu_max:
             raise ValueError(
-                f"RSU 数 {n_rsu} > n_rsu_max={self.n_rsu_max}，请调大配置 n_rsu_max"
+                f"RSU Number {n_rsu} > n_rsu_max={self.n_rsu_max}, Please increase the configuration n_rsu_max"
             )
 
         if n_rsu < self.n_rsu_max:

@@ -1,4 +1,4 @@
-"""读取测试集 CSI mat。"""
+"""Read test set CSI mat. """
 
 import numpy as np
 import scipy.io as sio
@@ -32,7 +32,7 @@ def load_test_csi(
     csi_file = csi_dir / f'{rsf}_{vehicle_csi}_{suffix}_CSI.mat'
 
     if not csi_file.exists():
-        print(f"[WARNING] CSI文件不存在: {csi_file}")
+        print(f"[WARNING] CSIFile does not exist: {csi_file}")
         return None
 
     try:
@@ -62,7 +62,7 @@ def load_test_csi(
                         break
 
         if csi_raw is None:
-            print(f"[WARNING] 找不到CSI数据，可用keys: {mat_data.keys()}")
+            print(f"[WARNING] Not foundCSIData, Availablekeys: {mat_data.keys()}")
             return None
 
         if csi_raw.dtype == object:
@@ -78,7 +78,7 @@ def load_test_csi(
 
                 csi_complex = np.stack(frame_list, axis=0)
             else:
-                print(f"[WARNING] 未知的object数组格式: {csi_raw.shape}")
+                print(f"[WARNING] UnknownobjectArray Format: {csi_raw.shape}")
                 return None
         else:
             if csi_raw.ndim == 3 and csi_raw.shape[2] > csi_raw.shape[0]:
@@ -111,12 +111,12 @@ def load_test_csi(
         )
 
         assert csi_final.shape == (2, num_frames_padded, 128, 32),\
-            f"CSI形状错误: {csi_final.shape}, 期望: (2, {num_frames_padded}, 128, 32)"
+            f"CSIWrong shape: {csi_final.shape}, Expectations: (2, {num_frames_padded}, 128, 32)"
 
         return csi_final.astype(np.float32)
 
     except Exception as e:
-        print(f"[ERROR] 加载CSI失败 {csi_file}: {e}")
+        print(f"[ERROR] LoadCSIFailed {csi_file}: {e}")
         return None
 
 def verify_test_csi_loading():
@@ -124,7 +124,7 @@ def verify_test_csi_loading():
     from config_test import TEST_DATA_ROOT, TEST_SCENES, SCENE_NAME_MAPPING
 
     print("=" * 60)
-    print("验证测试CSI加载")
+    print("Validation testCSILoad")
     print("=" * 60)
 
     test_scene = 'Scene_1'
@@ -139,14 +139,14 @@ def verify_test_csi_loading():
     )
 
     if csi is not None:
-        print(f"✓ CSI加载成功")
-        print(f"  形状: {csi.shape}")
-        print(f"  数据类型: {csi.dtype}")
-        print(f"  前750帧范围: [{csi[:, :750].min():.4f}, {csi[:, :750].max():.4f}]")
-        print(f"  后750帧范围: [{csi[:, 750:].min():.4f}, {csi[:, 750:].max():.4f}]")
-        print(f"  后750帧全0检查: {np.all(csi[:, 750:] == 0)}")
+        print(f"✓ CSILoaded successfully")
+        print(f"  Shape: {csi.shape}")
+        print(f"  Data Type: {csi.dtype}")
+        print(f"  ago750Frame Range: [{csi[:, :750].min():.4f}, {csi[:, :750].max():.4f}]")
+        print(f"  After750Frame Range: [{csi[:, 750:].min():.4f}, {csi[:, 750:].max():.4f}]")
+        print(f"  After750Frame Full0Check: {np.all(csi[:, 750:] == 0)}")
     else:
-        print("✗ CSI加载失败")
+        print("✗ CSILoading failed")
 
     print("=" * 60)
 

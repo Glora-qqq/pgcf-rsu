@@ -1,4 +1,4 @@
-"""导出定位阶段的数据读取接口。"""
+"""Data reading interface for export positioning stage. """
 
 from .loaders import (
     load_trajectory_txt,

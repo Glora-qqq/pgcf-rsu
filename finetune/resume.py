@@ -1,4 +1,4 @@
-"""从已有 checkpoint 继续微调。"""
+"""From Existing checkpoint Continue fine-tuning. """
 
 import subprocess
 import sys
@@ -21,33 +21,33 @@ MASK_RATIO = cfg.MODEL_CONFIG['mask_ratio']
 
 checkpoint_path = Path(CHECKPOINT_PATH)
 if not checkpoint_path.exists():
-    print(f"❌ Checkpoint未找到: {checkpoint_path}")
-    print(f"   请检查路径是否正确")
+    print(f"❌ CheckpointNot found: {checkpoint_path}")
+    print(f"   Please check that the path is correct")
     sys.exit(1)
 
 print("=" * 60)
-print("从Checkpoint继续训练")
+print("FromCheckpointContinue training")
 print("=" * 60)
-print(f"✅ 所有配置从 config.py 读取")
+print(f"✅ All configurations from config.py Read")
 print()
 print(f"Checkpoint: {CHECKPOINT_PATH}")
-print(f"起始Epoch: {START_EPOCH}")
-print(f"结束Epoch: {END_EPOCH}")
-print(f"额外训练: {END_EPOCH - START_EPOCH + 1} 轮")
+print(f"StartEpoch: {START_EPOCH}")
+print(f"EndEpoch: {END_EPOCH}")
+print(f"Extra training: {END_EPOCH - START_EPOCH + 1} Round")
 print()
 if USE_GROUPED_LR:
-    print("学习率配置（分组）：")
-    print(f"  RGB Gate:    {BASE_LR:.2e} × {RGB_GATE_MULTIPLIER:.0f} = {BASE_LR * RGB_GATE_MULTIPLIER:.2e}")
-    print(f"  RGB投影层:   {BASE_LR:.2e} × {RGB_PROJ_MULTIPLIER:.0f} = {BASE_LR * RGB_PROJ_MULTIPLIER:.2e}")
-    print(f"  其他参数:    {BASE_LR:.2e}")
+    print("Learning Rate Configuration (Group) : ")
+    print(f"  RGB Gate:    {BASE_LR:.2e} x {RGB_GATE_MULTIPLIER:.0f} = {BASE_LR * RGB_GATE_MULTIPLIER:.2e}")
+    print(f"  RGBProjection Layer:   {BASE_LR:.2e} x {RGB_PROJ_MULTIPLIER:.0f} = {BASE_LR * RGB_PROJ_MULTIPLIER:.2e}")
+    print(f"  Other Parameters:    {BASE_LR:.2e}")
 else:
-    print(f"学习率配置（统一）：{BASE_LR:.2e}")
+    print(f"Learning Rate Configuration (Unified) : {BASE_LR:.2e}")
 print()
-print(f"其他参数：")
+print(f"Other Parameters: ")
 print(f"  Batch size: {BATCH_SIZE}")
 print(f"  Mask ratio: {MASK_RATIO}")
 print()
-print("预期效果（使用分组学习率）：")
+print("Expected Effect (Use group learning rate) : ")
 print(f"  - Epoch 40: Gate ≈ 0.05-0.08")
 print(f"  - Epoch 50: Gate ≈ 0.12-0.18")
 print(f"  - Epoch 60: Gate ≈ 0.20-0.28")
@@ -71,8 +71,8 @@ if USE_GROUPED_LR:
         "--rgb_proj_lr_multiplier", str(RGB_PROJ_MULTIPLIER),
     ])
 
-print("启动训练...")
-print(f"命令: {' '.join(cmd)}")
+print("Start training...")
+print(f"Command: {' '.join(cmd)}")
 print()
 
 try:
@@ -80,31 +80,31 @@ try:
 
     print()
     print("=" * 60)
-    print("训练完成！")
+    print("Training Complete! ")
     print("=" * 60)
     print()
-    print("检查结果：")
-    print("  - 模型: checkpoints/best_model.pth")
+    print("Inspection results: ")
+    print("  - Model: checkpoints/best_model.pth")
     print()
 
 except subprocess.CalledProcessError as e:
     print()
     print("=" * 60)
-    print("❌ 训练过程出错")
+    print("❌ Error during training")
     print("=" * 60)
-    print(f"错误代码: {e.returncode}")
+    print(f"Error code: {e.returncode}")
     print()
-    print("请检查：")
-    print("  1. train.py是否存在")
-    print("  2. 数据集路径是否正确")
-    print("  3. GPU是否可用")
+    print("Please check: ")
+    print("  1. train.pyPresence")
+    print("  2. Is the dataset path correct?")
+    print("  3. GPUAvailability")
     sys.exit(1)
 
 except KeyboardInterrupt:
     print()
     print("=" * 60)
-    print("⚠️  训练被用户中断")
+    print("⚠️  Training interrupted by user")
     print("=" * 60)
     print()
-    print("可以使用相同命令继续训练")
+    print("Can continue training with the same command")
     sys.exit(0)

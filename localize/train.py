@@ -1,4 +1,4 @@
-"""训练几何质量融合和 GPS 引导的六维位姿修正。"""
+"""Training Geometry Mass Fusion and GPS Guided Six-Dimensional Pose Correction. """
 
 import os
 import sys
@@ -25,7 +25,7 @@ class Logger:
         self.log = open(self.log_file, 'w', encoding='utf-8')
 
         header = f"{'='*80}\n"
-        header += f"训练日志 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        header += f"Training Log - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         header += f"{'='*80}\n"
         self.log.write(header)
         self.log.flush()
@@ -44,7 +44,7 @@ class Logger:
     def close(self):
 
         footer = f"\n{'='*80}\n"
-        footer += f"训练结束 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        footer += f"End of training - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         footer += f"{'='*80}\n"
         self.log.write(footer)
         self.log.close()
@@ -69,10 +69,10 @@ class PoseFusionModel(nn.Module):
         strategy = str(getattr(config, "csi_fusion_strategy", "dynamic") or "dynamic").lower()
         if strategy == "concat_proj":
             self.multi_rsf_fusion = ConcatProjCSIFusion(config)
-            print("[INFO] 使用 ConcatProjCSIFusion（CSI 拼接→投影 512，无 12 维质量评分）")
+            print("[INFO] Use ConcatProjCSIFusion (CSI Stitching→Projection 512, None 12 Dimension Quality Score) ")
         else:
             self.multi_rsf_fusion = SpatialQualityFusion(config)
-            print("[INFO] 使用空间质量融合")
+            print("[INFO] Use space quality fusion")
 
         self.geo_quality = None
         self.geo_to_wifo = None
@@ -84,11 +84,11 @@ class PoseFusionModel(nn.Module):
                 nn.ReLU(),
                 nn.Linear(hidden, config.wifo_dim),
             )
-            print(f"[INFO] ablation_modality=gps_geo：几何旁路 geo_proj_hidden={hidden}（切断 CSI/RGB）")
+            print(f"[INFO] ablation_modality=gps_geo: Geometric bypass geo_proj_hidden={hidden} (Disconnect CSI/RGB) ")
         elif self.ablation_modality == 'placebo_shuffle':
-            print("[INFO] ablation_modality=placebo_shuffle：CSI/WiFo 时间维乱序（GPS 与 12 维几何不动）")
+            print("[INFO] ablation_modality=placebo_shuffle: CSI/WiFo Time dimension disorder (GPS And 12 Dimension Geometry Immovable) ")
         elif self.ablation_modality in ('no_csi_completion', 'no_completion'):
-            print("[INFO] ablation_modality=no_csi_completion：原始 CSI 缺失帧特征置零（dataloader 掐断；RGB/几何/GPS 不变）")
+            print("[INFO] ablation_modality=no_csi_completion: Original CSI Missing frame feature set to zero (dataloader Pinch off; RGB/Geometry/GPS Unchanged) ")
 
         self.temporal_model = TransformerTemporalModel(
             input_dim=config.wifo_dim,
@@ -104,7 +104,7 @@ class PoseFusionModel(nn.Module):
             hidden_dim=config.position_hidden_dim,
             config=config
         )
-        print("[INFO] 使用MLP回归头（支持运动感知输出）")
+        print("[INFO] UseMLPReturning Head (Supports motion-aware output) ")
 
     def _forward_gps_geo(self, rsf_data_dict, scene_names=None):
 
@@ -210,19 +210,19 @@ class Trainer:
             orientation_loss_type=self.config.orientation_loss_type,
         )
 
-        print("\n✅ 使用MultiLevel6DPoseLoss损失函数（5个损失）")
-        print(f"  - 位置 (α={self.config.loss_alpha}) | 方向 (ω={self.config.loss_omega}) | GPS修正 (β={self.config.loss_beta})")
-        print(f"  - 平滑 (γ={self.config.loss_gamma}) | 置信度 (δ={self.config.loss_delta})")
+        print("\n✅ UseMultiLevel6DPoseLossLoss function (5losses) ")
+        print(f"  - Location (α={self.config.loss_alpha}) | Direction (ω={self.config.loss_omega}) | GPSCorrection (β={self.config.loss_beta})")
+        print(f"  - Smoothing (γ={self.config.loss_gamma}) | Confidence (δ={self.config.loss_delta})")
 
         if getattr(self.config, 'use_output_adaptive_filter', False):
             from utils.adaptive_filter import VehicleAdaptiveOutputFilter
             self.output_filter = VehicleAdaptiveOutputFilter(self.config)
-            print("\n✅ 输出端车辆自适应滤波已启用")
-            print(f"  - Car车辆: xy用2D Kalman (Q={self.config.output_car_kalman_process_noise}, R={self.config.output_car_kalman_measurement_noise})")
-            print(f"  - AT车辆: xyz用3D UKF (Q={self.config.output_at_ukf_process_noise}, R={self.config.output_at_ukf_measurement_noise})")
+            print("\n✅ Output Vehicle Adaptive Filtering Enabled")
+            print(f"  - CarVehicle: xyFor2D Kalman (Q={self.config.output_car_kalman_process_noise}, R={self.config.output_car_kalman_measurement_noise})")
+            print(f"  - ATVehicle: xyzFor3D UKF (Q={self.config.output_at_ukf_process_noise}, R={self.config.output_at_ukf_measurement_noise})")
         else:
             self.output_filter = None
-            print("\n❌ 输出端滤波已关闭")
+            print("\n❌ Output filtering is off")
 
         self.evaluator = PoseEvaluator()
 
@@ -249,7 +249,7 @@ class Trainer:
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
-        print(f"\n[随机种子] 已设置为 {seed}（确保训练可复现）")
+        print(f"\n[Random Seeds] Set to {seed} (Ensure the training is reproducible) ")
 
     def _create_optimizer(self):
 
@@ -259,7 +259,7 @@ class Trainer:
                 lr=self.config.learning_rate,
                 weight_decay=self.config.weight_decay
             )
-            print(f"✅ 使用Adam优化器: lr={self.config.learning_rate}, weight_decay={self.config.weight_decay}")
+            print(f"✅ UseAdamOptimizer: lr={self.config.learning_rate}, weight_decay={self.config.weight_decay}")
         elif self.config.optimizer == 'adamw':
             optimizer = torch.optim.AdamW(
                 self.model.parameters(),
@@ -268,16 +268,16 @@ class Trainer:
                 betas=(0.9, 0.999),
                 eps=1e-8
             )
-            print(f"✅ 使用AdamW优化器: lr={self.config.learning_rate}, weight_decay={self.config.weight_decay}")
+            print(f"✅ UseAdamWOptimizer: lr={self.config.learning_rate}, weight_decay={self.config.weight_decay}")
         else:
-            raise ValueError(f"不支持的优化器: {self.config.optimizer}")
+            raise ValueError(f"Unsupported optimizer: {self.config.optimizer}")
 
         return optimizer
 
     def _create_scheduler(self):
 
         if self.config.lr_scheduler is None:
-            print(f"⚪ 使用固定学习率: {self.config.learning_rate}")
+            print(f"⚪ Use fixed learning rate: {self.config.learning_rate}")
             return None
 
         if self.config.lr_scheduler == 'cosine':
@@ -286,7 +286,7 @@ class Trainer:
                 T_max=self.config.num_epochs,
                 eta_min=self.config.cosine_min_lr
             )
-            print(f"✅ 使用余弦退火学习率: {self.config.learning_rate} → {self.config.cosine_min_lr}")
+            print(f"✅ Learning rate using cosine annealing: {self.config.learning_rate} → {self.config.cosine_min_lr}")
             return scheduler
 
         elif self.config.lr_scheduler == 'step':
@@ -295,7 +295,7 @@ class Trainer:
                 step_size=50,
                 gamma=0.5
             )
-            print(f"✅ 使用阶梯式学习率: 每50轮×0.5")
+            print(f"✅ Use tiered learning rates: Every50Roundx0.5")
             return scheduler
 
         elif self.config.lr_scheduler == 'warmup_cosine':
@@ -310,40 +310,40 @@ class Trainer:
                     return min_lr_ratio + (1 - min_lr_ratio) * cosine_decay
 
             scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=warmup_cosine_schedule)
-            print(f"✅ 使用预热+余弦退火学习率:")
+            print(f"✅ Use preheat+Cosine annealing learning rate:")
             print(f"   Warmup: Epoch 0-{self.config.cosine_warmup_epochs} (0 → {self.config.learning_rate:.2e})")
             print(f"   Cosine: Epoch {self.config.cosine_warmup_epochs}-{self.config.num_epochs} ({self.config.learning_rate:.2e} → {self.config.cosine_min_lr:.2e})")
             return scheduler
         else:
-            raise ValueError(f"不支持的学习率调度器: {self.config.lr_scheduler}")
+            raise ValueError(f"Unsupported Learning Rate Scheduler: {self.config.lr_scheduler}")
 
     def load_checkpoint(self, checkpoint_path):
 
         checkpoint_path = Path(checkpoint_path)
 
         if not checkpoint_path.exists():
-            raise FileNotFoundError(f"检查点文件不存在: {checkpoint_path}")
+            raise FileNotFoundError(f"Checkpoint file does not exist: {checkpoint_path}")
 
         print(f"\n{'='*80}")
-        print(f"💾 加载检查点: {checkpoint_path}")
+        print(f"💾 Load checkpoint: {checkpoint_path}")
         print(f"{'='*80}")
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
         self.model.load_state_dict(checkpoint['model_state_dict'])
-        print(f"✅ 模型权重已加载（epoch {checkpoint['epoch']}）")
+        print(f"✅ Model weight loaded (epoch {checkpoint['epoch']}) ")
 
         if self.config.resume_optimizer and 'optimizer_state_dict' in checkpoint:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            print(f"✅ 优化器状态已加载")
+            print(f"✅ Optimizer status loaded")
         else:
-            print(f"⚠️  使用新的优化器状态（学习率: {self.config.learning_rate}）")
+            print(f"⚠️  Use new optimizer state (Learning Rate: {self.config.learning_rate}) ")
 
         if 'train_history' in checkpoint:
             self.train_history = checkpoint['train_history']
-            print(f"✅ 训练历史已加载（{len(self.train_history.get('losses', []))} epochs）")
+            print(f"✅ Training history loaded ({len(self.train_history.get('losses', []))} epochs) ")
 
         start_epoch = checkpoint['epoch'] + 1
-        print(f"📍 将从 Epoch {start_epoch} 继续训练")
+        print(f"📍 will start from Epoch {start_epoch} Continue training")
         print(f"{'='*80}\n")
 
         return start_epoch
@@ -511,19 +511,19 @@ class Trainer:
 
     def train(self, train_loader, val_loader=None):
 
-        print("开始 PGCF-RSU 定位训练")
-        print(f"模型参数: {sum(p.numel() for p in self.model.parameters()):,}")
-        print(f"设备: {self.device}")
-        print(f"训练轮数: {self.config.num_epochs}")
+        print("Start PGCF-RSU Positioning training")
+        print(f"Model Parameters: {sum(p.numel() for p in self.model.parameters()):,}")
+        print(f"Equipment: {self.device}")
+        print(f"Number of training rounds: {self.config.num_epochs}")
 
         start_epoch = 1
         if self.config.resume_from is not None:
             try:
                 start_epoch = self.load_checkpoint(self.config.resume_from)
-                print(f"✅ 从 Epoch {start_epoch} 恢复训练\n")
+                print(f"✅ From Epoch {start_epoch} Resume training\n")
             except Exception as e:
-                print(f"❌ 加载checkpoint失败: {e}")
-                print(f"⚠️  将从头开始训练\n")
+                print(f"❌ LoadcheckpointFailed: {e}")
+                print(f"⚠️  Will start training from scratch\n")
                 import traceback
                 traceback.print_exc()
                 start_epoch = 1
@@ -536,17 +536,17 @@ class Trainer:
             train_loss, loss_dict = self.train_epoch(train_loader, epoch)
             self.train_history['losses'].append(train_loss)
 
-            print(f"\nEpoch {current_training_epoch}/{self.config.num_epochs} (总轮次: {epoch})")
-            print(f"训练损失: {train_loss:.6f}")
-            print(f"  - 位置损失 (总): {loss_dict.get('position', 0.0):.4f}")
+            print(f"\nEpoch {current_training_epoch}/{self.config.num_epochs} (Total Rounds: {epoch})")
+            print(f"Training Losses: {train_loss:.6f}")
+            print(f"  - Loss of position (Total): {loss_dict.get('position', 0.0):.4f}")
             print(f"    └─ X: {loss_dict.get('pos_x', 0.0):.4f} | Y: {loss_dict.get('pos_y', 0.0):.4f} | Z: {loss_dict.get('pos_z', 0.0):.4f}")
-            print(f"  - 方向损失: {loss_dict.get('orientation', 0.0):.4f} | GPS修正: {loss_dict.get('gps_correction', 0.0):.4f}")
-            print(f"  - 平滑损失: {loss_dict.get('smooth', 0.0):.4f} | 置信度: {loss_dict.get('confidence_reg', 0.0):.4f}")
+            print(f"  - Direction Loss: {loss_dict.get('orientation', 0.0):.4f} | GPSCorrection: {loss_dict.get('gps_correction', 0.0):.4f}")
+            print(f"  - Smooth Loss: {loss_dict.get('smooth', 0.0):.4f} | Confidence: {loss_dict.get('confidence_reg', 0.0):.4f}")
 
             if self.scheduler is not None:
                 self.scheduler.step()
                 current_lr = self.optimizer.param_groups[0]['lr']
-                print(f"📉 当前学习率: {current_lr:.2e}")
+                print(f"📉 Current Learning Rate: {current_lr:.2e}")
 
             current_loss = train_loss
             if val_loader is not None:
@@ -554,13 +554,13 @@ class Trainer:
                 self.train_history['metrics'].append(val_metrics)
                 current_loss = val_loss
 
-                print(f"验证损失: {val_loss:.6f}")
-                print(f"位置MAE: {val_metrics.get('position_mae', 0):.3f}m")
-                print(f"GPS改进: {val_metrics.get('improvement_ratio', 0):.1%}")
+                print(f"Validate loss: {val_loss:.6f}")
+                print(f"LocationMAE: {val_metrics.get('position_mae', 0):.3f}m")
+                print(f"GPSImprovement: {val_metrics.get('improvement_ratio', 0):.1%}")
 
                 if getattr(self.config, 'use_output_kalman', False) and 'kalman_position_mae' in val_metrics:
-                    print(f"  [卡尔曼滤波] 位置MAE: {val_metrics.get('kalman_position_mae', 0):.3f}m")
-                    print(f"  [卡尔曼滤波] GPS改进: {val_metrics.get('kalman_improvement_ratio', 0):.1%}")
+                    print(f"  [Kalman filtering] LocationMAE: {val_metrics.get('kalman_position_mae', 0):.3f}m")
+                    print(f"  [Kalman filtering] GPSImprovement: {val_metrics.get('kalman_improvement_ratio', 0):.1%}")
 
             if current_loss < self.best_val_loss:
                 self.best_val_loss = current_loss
@@ -583,12 +583,12 @@ class Trainer:
                         'delta': self.config.loss_delta,
                     },
                 }, best_model_path)
-                print(f"[OK] 保存最佳模型 (Epoch {epoch}, Loss={current_loss:.4f}): {best_model_path}")
+                print(f"[OK] Save the best model (Epoch {epoch}, Loss={current_loss:.4f}): {best_model_path}")
 
             if epoch % self.config.save_every == 0:
                 self._save_checkpoint(epoch, 'regular')
 
-        print("训练完成")
+        print("Training Complete")
 
     def _save_checkpoint(self, epoch, checkpoint_type):
 
@@ -610,11 +610,11 @@ class Trainer:
 
         torch.save(checkpoint, path)
         if self.config.verbose:
-            print(f"保存检查点: {path}")
+            print(f"Save Checkpoint: {path}")
 
 def create_data_loaders(config):
 
-    print("创建6维姿态数据加载器...")
+    print("Create6Dimension Pose Data Loader...")
 
     from utils.constants import SCENE_RSF_CONFIG
     rsf_config = SCENE_RSF_CONFIG
@@ -651,54 +651,54 @@ def main():
     log_file = LOG_ROOT / 'training_log.txt'
     logger = Logger(log_file)
     sys.stdout = logger
-    print(f"✅ 日志记录已启用: {log_file}")
+    print(f"✅ Logging Enabled: {log_file}")
 
     print("\n" + "="*80)
-    print("训练配置")
+    print("Training Configuration")
     print("="*80)
-    print(f"场景: {config.scenes}")
-    print(f"时间窗口: {config.time_window} (None=完整轨迹)")
-    print(f"Batch大小: {config.batch_size}")
-    print(f"训练轮数: {config.num_epochs}")
-    print(f"6维姿态: {config.use_6d_pose}")
-    print(f"位置修正上限: {config.max_position_correction}m")
-    print(f"姿态修正上限: {config.max_orientation_correction} rad ({config.max_orientation_correction*57.3:.1f}°)")
-    print(f"学习率: {config.learning_rate}")
-    print(f"设备: {config.device if config.device else '自动选择'}")
+    print(f"Scenario: {config.scenes}")
+    print(f"Time window: {config.time_window} (None=Full trajectory)")
+    print(f"BatchSize: {config.batch_size}")
+    print(f"Number of training rounds: {config.num_epochs}")
+    print(f"6dimensional posture: {config.use_6d_pose}")
+    print(f"Position Correction Upper Limit: {config.max_position_correction}m")
+    print(f"Upper Posture Correction Limit: {config.max_orientation_correction} rad ({config.max_orientation_correction*57.3:.1f}°)")
+    print(f"Learning Rate: {config.learning_rate}")
+    print(f"Equipment: {config.device if config.device else 'Automatic selection'}")
     print("-" * 80)
-    print("🔬 车辆类型自适应卡尔曼滤波策略 v2.0")
+    print("🔬 Vehicle type adaptive Kalman filtering strategy v2.0")
     print("-" * 80)
 
-    print(f"\n📥 输入端车辆自适应滤波（数据加载阶段，GPS预处理）:")
+    print(f"\n📥 Input vehicle adaptive filtering (Data loading phase, GPSPretreatment) :")
     if getattr(config, 'use_adaptive_kalman', True):
-        print(f"  ✅ 已启用（车辆类型自适应）")
+        print(f"  ✅ Enabled (Vehicle type adaptive) ")
 
         if getattr(config, 'use_input_kalman', False):
-            print(f"     - Car车辆：2D Kalman滤波（xy）")
+            print(f"     - CarVehicle: 2D KalmanFilter (xy) ")
             print(f"       · process_noise={getattr(config, 'input_kalman_process_noise', 0.10)}")
             print(f"       · measurement_noise={getattr(config, 'input_kalman_measurement_noise', 1.6)}")
 
         if getattr(config, 'use_at_ukf', False):
-            print(f"     - AT车辆：3D UKF滤波（xyz）✅")
+            print(f"     - ATVehicle: 3D UKFFilter (xyz) ✅")
             print(f"       · process_noise: {getattr(config, 'at_ukf_process_noise', 0.1)}")
             print(f"       · measurement_noise: {getattr(config, 'at_ukf_measurement_noise', 1.6)}")
-            print(f"       · dt: {getattr(config, 'at_ukf_dt', 0.05)}秒@20Hz")
+            print(f"       · dt: {getattr(config, 'at_ukf_dt', 0.05)}Seconds@20Hz")
             if getattr(config, 'at_ukf_orientation', False):
-                print(f"       · 姿态滤波: 启用")
+                print(f"       · Attitude filtering: Enable")
             else:
-                print(f"       · 姿态滤波: 关闭（只滤波xyz）")
+                print(f"       · Attitude filtering: Close (Filter onlyxyz) ")
         else:
-            print(f"     - AT车辆：无滤波（使用原始GPS）")
+            print(f"     - ATVehicle: No filtering (Use originalGPS) ")
     else:
-        print(f"  ❌ 已关闭")
+        print(f"  ❌ Closed")
 
-    print(f"\n📤 输出端车辆自适应滤波（模型预测后，损失计算前）:")
+    print(f"\n📤 Output Vehicle Adaptive Filtering (After model prediction, Before loss calculation) :")
     if getattr(config, 'use_output_adaptive_filter', False):
-        print(f"  ✅ 已启用")
-        print(f"     - Car车辆: xy用2D Kalman (Q={getattr(config, 'output_car_kalman_process_noise', 0.10)}, R={getattr(config, 'output_car_kalman_measurement_noise', 1.6)})")
-        print(f"     - AT车辆: xyz用3D UKF (Q={getattr(config, 'output_at_ukf_process_noise', 0.10)}, R={getattr(config, 'output_at_ukf_measurement_noise', 0.8)})")
+        print(f"  ✅ Enabled")
+        print(f"     - CarVehicle: xyFor2D Kalman (Q={getattr(config, 'output_car_kalman_process_noise', 0.10)}, R={getattr(config, 'output_car_kalman_measurement_noise', 1.6)})")
+        print(f"     - ATVehicle: xyzFor3D UKF (Q={getattr(config, 'output_at_ukf_process_noise', 0.10)}, R={getattr(config, 'output_at_ukf_measurement_noise', 0.8)})")
     else:
-        print(f"  ❌ 已关闭（直接使用模型输出进行损失计算，梯度直接作用于模型）")
+        print(f"  ❌ Closed (Loss calculation using model output directly, Gradient acts directly on the model) ")
     print("="*80 + "\n")
 
     try:
@@ -709,7 +709,7 @@ def main():
         trainer.train(train_loader, val_loader)
 
     except Exception as e:
-        print(f"训练出错: {e}")
+        print(f"Training error: {e}")
         import traceback
         traceback.print_exc()
 

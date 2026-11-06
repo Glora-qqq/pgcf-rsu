@@ -1,4 +1,4 @@
-"""读取微调阶段导出的 512 维 CSI 特征。"""
+"""Read fine-tuning phase export 512 Dimensions CSI Features. """
 
 import numpy as np
 import json
@@ -18,20 +18,20 @@ def load_vehicle_wifo_features(
     vehicle_dir = features_root / scene_name / vehicle_name
 
     if not vehicle_dir.exists():
-        raise ValueError(f"车辆目录不存在: {vehicle_dir}")
+        raise ValueError(f"Vehicle directory does not exist: {vehicle_dir}")
 
     wifo_features = []
     for rsf_name in rsf_list:
         feature_file = vehicle_dir / f"{vehicle_name}_{rsf_name}_wifo_features.npy"
         if not feature_file.exists():
-            raise ValueError(f"特征文件不存在: {feature_file}")
+            raise ValueError(f"Feature file does not exist: {feature_file}")
 
         features = np.load(str(feature_file))
         wifo_features.append(features)
 
     T_list = [feat.shape[0] for feat in wifo_features]
     if len(set(T_list)) > 1:
-        raise ValueError(f"不同RSF的帧数不一致: {T_list}")
+        raise ValueError(f"DifferentRSFInconsistent frames: {T_list}")
 
     result = {
         'wifo_features': wifo_features,
@@ -47,7 +47,7 @@ def load_vehicle_wifo_features(
             gps_coordinates = np.load(str(gps_file))
             result['gps_coordinates'] = gps_coordinates
         else:
-            print(f"[WARNING] GPS文件不存在: {gps_file}")
+            print(f"[WARNING] GPSFile does not exist: {gps_file}")
             result['gps_coordinates'] = None
 
     if load_frame_info:
@@ -57,7 +57,7 @@ def load_vehicle_wifo_features(
                 frame_info = json.load(f)
             result['frame_info'] = frame_info
         else:
-            print(f"[WARNING] 帧信息文件不存在: {info_file}")
+            print(f"[WARNING] Frame information file does not exist: {info_file}")
             result['frame_info'] = None
 
     return result
@@ -88,7 +88,7 @@ def load_vehicle_wifo_features_scene2_3(
 ) -> Dict:
 
     if scene_name not in ['Scene2', 'Scene3']:
-        raise ValueError(f"场景名称必须是 Scene2 或 Scene3，实际: {scene_name}")
+        raise ValueError(f"Scene name must be Scene2 or Scene3, Actual: {scene_name}")
 
     rsf_list = ['RSF1', 'RSF3', 'RSF7', 'RSF11']
     return load_vehicle_wifo_features(
@@ -112,7 +112,7 @@ def load_scene_all_vehicles_wifo_features(
     scene_dir = features_root / scene_name
 
     if not scene_dir.exists():
-        raise ValueError(f"场景目录不存在: {scene_dir}")
+        raise ValueError(f"Scene directory does not exist: {scene_dir}")
 
     if rsf_list is None:
         if scene_name == 'Scene1':
@@ -120,7 +120,7 @@ def load_scene_all_vehicles_wifo_features(
         elif scene_name in ['Scene2', 'Scene3']:
             rsf_list = ['RSF1', 'RSF3', 'RSF7', 'RSF11']
         else:
-            raise ValueError(f"未知场景: {scene_name}")
+            raise ValueError(f"Unknown Scenario: {scene_name}")
 
     all_vehicles = {}
     for vehicle_dir in scene_dir.iterdir():
@@ -140,7 +140,7 @@ def load_scene_all_vehicles_wifo_features(
             )
             all_vehicles[vehicle_name] = vehicle_data
         except Exception as e:
-            print(f"[WARNING] 加载 {scene_name}/{vehicle_name} 失败: {e}")
+            print(f"[WARNING] Load {scene_name}/{vehicle_name} Failed: {e}")
 
     return all_vehicles
 
@@ -150,7 +150,7 @@ def get_wifo_feature_by_frame_index(
 ) -> np.ndarray:
 
     if frame_idx < 0 or frame_idx >= wifo_features.shape[0]:
-        raise IndexError(f"帧索引超出范围: {frame_idx}, 总帧数: {wifo_features.shape[0]}")
+        raise IndexError(f"Frame index out of range: {frame_idx}, Total frames: {wifo_features.shape[0]}")
 
     return wifo_features[frame_idx]
 
@@ -161,7 +161,7 @@ def get_wifo_features_by_frame_range(
 ) -> np.ndarray:
 
     if start_idx < 0 or end_idx >= wifo_features.shape[0] or start_idx > end_idx:
-        raise IndexError(f"帧范围无效: [{start_idx}, {end_idx}], 总帧数: {wifo_features.shape[0]}")
+        raise IndexError(f"Invalid frame range: [{start_idx}, {end_idx}], Total frames: {wifo_features.shape[0]}")
 
     return wifo_features[start_idx:end_idx+1]
 
@@ -179,11 +179,11 @@ def align_wifo_features_with_gt(
 
     if relative_start < 0 or relative_end >= wifo_features.shape[0]:
         raise ValueError(
-            f"GT帧范围超出车辆范围: "
+            f"GTFrame range out of vehicle range: "
             f"GT=[{gt_start}, {gt_end}], "
             f"Vehicle=[{vehicle_start}, {vehicle_end}], "
-            f"相对索引=[{relative_start}, {relative_end}], "
-            f"特征帧数={wifo_features.shape[0]}"
+            f"Relative index=[{relative_start}, {relative_end}], "
+            f"Number of feature frames={wifo_features.shape[0]}"
         )
 
     return wifo_features[relative_start:relative_end+1]
@@ -194,13 +194,13 @@ if __name__ == '__main__':
     from config import WIFO_FEATURES_ROOT
 
     print("="*80)
-    print("WiFo特征加载器测试")
+    print("WiFoFeature loader test")
     print("="*80)
-    print(f"特征根目录（来自config.py）: {WIFO_FEATURES_ROOT}\n")
+    print(f"Feature Root (Fromconfig.py) : {WIFO_FEATURES_ROOT}\n")
 
     features_root = WIFO_FEATURES_ROOT
 
-    print("\n【测试1】Scene1/Car1 加载（3个RSF）")
+    print("\n[Test1] Scene1/Car1 Load (3PieceRSF) ")
     print("-" * 50)
 
     result = load_vehicle_wifo_features_scene1(
@@ -208,26 +208,26 @@ if __name__ == '__main__':
         vehicle_name='Car1',
     )
 
-    print(f"场景: {result['scene']}")
-    print(f"车辆: {result['vehicle']}")
-    print(f"RSF列表: {result['rsf_list']}")
-    print(f"总帧数: {result['num_frames']}")
-    print(f"\nWiFo特征数量: {len(result['wifo_features'])}")
+    print(f"Scenario: {result['scene']}")
+    print(f"Vehicle: {result['vehicle']}")
+    print(f"RSFList: {result['rsf_list']}")
+    print(f"Total frames: {result['num_frames']}")
+    print(f"\nWiFoNumber of features: {len(result['wifo_features'])}")
     for i, feat in enumerate(result['wifo_features']):
         print(f"  {result['rsf_list'][i]}: {feat.shape}")
 
     if result['gps_coordinates'] is not None:
-        print(f"\nGPS坐标: {result['gps_coordinates'].shape}")
+        print(f"\nGPSCoordinates: {result['gps_coordinates'].shape}")
 
     if result['frame_info'] is not None:
         info = result['frame_info']
-        print(f"\n帧信息:")
-        print(f"  起始帧: {info['start_frame']}")
-        print(f"  结束帧: {info['end_frame']}")
-        print(f"  总帧数: {info['total_frames']}")
+        print(f"\nFrame Information:")
+        print(f"  Start Frame: {info['start_frame']}")
+        print(f"  End Frame: {info['end_frame']}")
+        print(f"  Total frames: {info['total_frames']}")
 
     print("\n" + "="*80)
-    print("【测试2】Scene2/Car14 加载（4个RSF）")
+    print("[Test2] Scene2/Car14 Load (4PieceRSF) ")
     print("-" * 50)
 
     result2 = load_vehicle_wifo_features_scene2_3(
@@ -236,16 +236,16 @@ if __name__ == '__main__':
         vehicle_name='Car14',
     )
 
-    print(f"场景: {result2['scene']}")
-    print(f"车辆: {result2['vehicle']}")
-    print(f"RSF列表: {result2['rsf_list']}")
-    print(f"总帧数: {result2['num_frames']}")
-    print(f"\nWiFo特征数量: {len(result2['wifo_features'])}")
+    print(f"Scenario: {result2['scene']}")
+    print(f"Vehicle: {result2['vehicle']}")
+    print(f"RSFList: {result2['rsf_list']}")
+    print(f"Total frames: {result2['num_frames']}")
+    print(f"\nWiFoNumber of features: {len(result2['wifo_features'])}")
     for i, feat in enumerate(result2['wifo_features']):
         print(f"  {result2['rsf_list'][i]}: {feat.shape}")
 
     print("\n" + "="*80)
-    print("【测试3】Scene3/AT1 加载（4个RSF）")
+    print("[Test3] Scene3/AT1 Load (4PieceRSF) ")
     print("-" * 50)
 
     result3 = load_vehicle_wifo_features_scene2_3(
@@ -254,45 +254,45 @@ if __name__ == '__main__':
         vehicle_name='AT1',
     )
 
-    print(f"场景: {result3['scene']}")
-    print(f"车辆: {result3['vehicle']}")
-    print(f"RSF列表: {result3['rsf_list']}")
-    print(f"总帧数: {result3['num_frames']}")
+    print(f"Scenario: {result3['scene']}")
+    print(f"Vehicle: {result3['vehicle']}")
+    print(f"RSFList: {result3['rsf_list']}")
+    print(f"Total frames: {result3['num_frames']}")
 
     print("\n" + "="*80)
-    print("【测试4】帧索引访问")
+    print("[Test4] Frame Index Access")
     print("-" * 50)
 
     wifo_feat = result['wifo_features'][0]
-    print(f"特征形状: {wifo_feat.shape}")
+    print(f"Feature Shapes: {wifo_feat.shape}")
 
     frame_0 = get_wifo_feature_by_frame_index(wifo_feat, 0)
-    print(f"第0帧特征: {frame_0.shape}")
+    print(f"Page0Frame characteristics: {frame_0.shape}")
 
     frames_0_9 = get_wifo_features_by_frame_range(wifo_feat, 0, 9)
-    print(f"第0-9帧特征: {frames_0_9.shape}")
+    print(f"Page0-9Frame characteristics: {frames_0_9.shape}")
 
     print("\n" + "="*80)
-    print("【测试5】WiFo特征与GT对齐")
+    print("[Test5] WiFoFeatures vs.GTAlignment")
     print("-" * 50)
 
     info = result['frame_info']
     vehicle_frame_range = (info['start_frame'] - 1, info['end_frame'] - 1)
     gt_frame_range = vehicle_frame_range
 
-    print(f"车辆帧范围: {vehicle_frame_range} (0-based)")
-    print(f"GT帧范围: {gt_frame_range} (0-based)")
+    print(f"Vehicle Frame Range: {vehicle_frame_range} (0-based)")
+    print(f"GTFrame Range: {gt_frame_range} (0-based)")
 
     aligned = align_wifo_features_with_gt(
         wifo_features=wifo_feat,
         gt_frame_range=gt_frame_range,
         vehicle_frame_range=vehicle_frame_range,
     )
-    print(f"对齐后特征: {aligned.shape}")
-    print(f"是否相同: {np.array_equal(aligned, wifo_feat)}")
+    print(f"Post-alignment features: {aligned.shape}")
+    print(f"Is same: {np.array_equal(aligned, wifo_feat)}")
 
     print("\n" + "="*80)
-    print("【测试6】加载Scene1所有车辆")
+    print("[Test6] LoadScene1All vehicles")
     print("-" * 50)
 
     all_vehicles = load_scene_all_vehicles_wifo_features(
@@ -302,10 +302,10 @@ if __name__ == '__main__':
         load_frame_info=True,
     )
 
-    print(f"Scene1车辆数: {len(all_vehicles)}")
+    print(f"Scene1Number of vehicles: {len(all_vehicles)}")
     for vehicle_name, vehicle_data in all_vehicles.items():
-        print(f"  {vehicle_name}: {vehicle_data['num_frames']}帧, {len(vehicle_data['rsf_list'])}个RSF")
+        print(f"  {vehicle_name}: {vehicle_data['num_frames']}Frame, {len(vehicle_data['rsf_list'])}PieceRSF")
 
     print("\n" + "="*80)
-    print("✅ 所有测试通过！")
+    print("✅ All tests passed! ")
     print("="*80)

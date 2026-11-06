@@ -1,4 +1,4 @@
-"""导出微调网络、预训练加载和重建损失。"""
+"""Export fine-tuned network, Pretrained Load and Rebuild Losses. """
 
 from .network import GatedWiFo, create_network
 from .pretrained import pretrained_weights

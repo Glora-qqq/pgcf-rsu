@@ -1,4 +1,4 @@
-"""训练时的随机掩码，以及按有效帧约束的掩码。"""
+"""Random mask during training, and masks by valid frame constraints. """
 
 import torch
 import torch.nn as nn

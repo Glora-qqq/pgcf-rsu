@@ -1,4 +1,4 @@
-"""从 GPS 文本读取车辆出现的帧范围。"""
+"""From GPS Text Read Vehicle Appears Frame Range. """
 
 import os
 import os
@@ -10,12 +10,12 @@ from typing import Tuple, Optional, Dict, List
 def find_gps_file(scene: str, vehicle: str, data_root: Path, is_test: bool = False) -> Optional[Path]:
 
     if data_root is None:
-        raise ValueError("data_root参数不能为None")
+        raise ValueError("data_rootParameter cannot beNone")
 
     vehicle_dir = data_root / scene / vehicle
 
     if not vehicle_dir.exists():
-        print(f"[WARNING] 车辆目录不存在: {vehicle_dir}")
+        print(f"[WARNING] Vehicle directory does not exist: {vehicle_dir}")
         return None
 
     vehicle_num = vehicle.replace('Car', '').replace('car', '').replace('AT', '').replace('UAV', '')
@@ -46,7 +46,7 @@ def find_gps_file(scene: str, vehicle: str, data_root: Path, is_test: bool = Fal
         if gps_file.exists():
             return gps_file
 
-    print(f"[WARNING] 未找到GPS文件: {vehicle_dir}/[{', '.join(possible_patterns[:3])}...]")
+    print(f"[WARNING] Not foundGPSFile: {vehicle_dir}/[{', '.join(possible_patterns[:3])}...]")
     return None
 
 def extract_frame_range_from_gps(gps_file_path: Path) -> Tuple[int, int, int]:
@@ -65,12 +65,12 @@ def extract_frame_range_from_gps(gps_file_path: Path) -> Tuple[int, int, int]:
 
         expected_frames = end_frame - start_frame + 1
         if total_frames != expected_frames:
-            print(f"[WARNING] GPS帧不连续: 预期{expected_frames}帧，实际{total_frames}帧")
+            print(f"[WARNING] GPSFrame discontinuity: Expected{expected_frames}Frame, Actual{total_frames}Frame")
 
         return start_frame, end_frame, total_frames
 
     except Exception as e:
-        error_msg = f"[ERROR] 读取GPS文件失败: {gps_file_path}\n错误: {e}"
+        error_msg = f"[ERROR] ReadGPSFile failed: {gps_file_path}\nError: {e}"
         raise RuntimeError(error_msg)
 
 def extract_gps_coordinates(gps_file_path: Path) -> np.ndarray:
@@ -86,7 +86,7 @@ def extract_gps_coordinates(gps_file_path: Path) -> np.ndarray:
         return coordinates
 
     except Exception as e:
-        error_msg = f"[ERROR] 读取GPS坐标失败: {gps_file_path}\n错误: {e}"
+        error_msg = f"[ERROR] ReadGPSCoordinates failed: {gps_file_path}\nError: {e}"
         raise RuntimeError(error_msg)
 
 def get_vehicle_frame_info(scene: str, vehicle: str, data_root: Path, is_test: bool = False) -> Dict:
@@ -94,9 +94,9 @@ def get_vehicle_frame_info(scene: str, vehicle: str, data_root: Path, is_test: b
     gps_file = find_gps_file(scene, vehicle, data_root, is_test)
 
     if gps_file is None:
-        data_type = "测试集" if is_test else "训练集"
-        error_msg = f"[ERROR] 未找到GPS文件: {data_type} {scene}/{vehicle}\n" \
-                   f"   检查路径: {data_root}/{scene}/{vehicle}/"
+        data_type = "Test set" if is_test else "Training Sets"
+        error_msg = f"[ERROR] Not foundGPSFile: {data_type} {scene}/{vehicle}\n" \
+                   f"   Check Path: {data_root}/{scene}/{vehicle}/"
         raise FileNotFoundError(error_msg)
 
     start_frame, end_frame, total_frames = extract_frame_range_from_gps(gps_file)
@@ -106,7 +106,7 @@ def get_vehicle_frame_info(scene: str, vehicle: str, data_root: Path, is_test: b
 
     expected_length = end_index - start_index + 1
     if expected_length != total_frames:
-        print(f"[WARNING] 索引计算不一致: {expected_length} vs {total_frames}")
+        print(f"[WARNING] Inconsistent index calculation: {expected_length} vs {total_frames}")
 
     gps_coordinates = extract_gps_coordinates(gps_file)
 
@@ -137,17 +137,17 @@ def get_scene_vehicles_frame_info(
             frame_info = get_vehicle_frame_info(scene, vehicle, data_root, is_test)
             vehicles_info[vehicle] = frame_info
         except FileNotFoundError as e:
-            print(f"[WARNING] 跳过车辆 {vehicle}: {e}")
+            print(f"[WARNING] Skip Vehicle {vehicle}: {e}")
             continue
 
     return vehicles_info
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("GPS加载器测试")
+    print("GPSLoader Test")
     print("=" * 70)
 
-    print("\n【测试1：训练集单车辆】")
+    print("\n[Test1: Training Set Single Vehicle] ")
     train_data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[2] / 'data')) / 'train'
     scene = 'Scene1'
     vehicle = 'Car1'
@@ -155,16 +155,16 @@ if __name__ == '__main__':
     try:
         info = get_vehicle_frame_info(scene, vehicle, train_data_root, is_test=False)
         print(f"✓ {scene}/{vehicle}")
-        print(f"  GPS文件: {Path(info['gps_file']).name}")
-        print(f"  帧范围: {info['start_frame']}-{info['end_frame']} (1-based)")
-        print(f"  Python索引: [{info['start_index']}:{info['end_index']+1}] (0-based)")
-        print(f"  总帧数: {info['total_frames']}")
-        print(f"  GPS坐标: {info['gps_coordinates'].shape}")
-        print(f"  验证: {info['end_index'] - info['start_index'] + 1} == {info['total_frames']} ✓")
+        print(f"  GPSFile: {Path(info['gps_file']).name}")
+        print(f"  Frame Range: {info['start_frame']}-{info['end_frame']} (1-based)")
+        print(f"  PythonIndex: [{info['start_index']}:{info['end_index']+1}] (0-based)")
+        print(f"  Total frames: {info['total_frames']}")
+        print(f"  GPSCoordinates: {info['gps_coordinates'].shape}")
+        print(f"  Verify: {info['end_index'] - info['start_index'] + 1} == {info['total_frames']} ✓")
     except Exception as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ Error: {e}")
 
-    print("\n【测试2：测试集单车辆】")
+    print("\n[Test2: Test set single vehicle] ")
     test_data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[2] / 'data')) / 'test'
     scene = 'Scene_1'
     vehicle = 'Car1'
@@ -172,15 +172,15 @@ if __name__ == '__main__':
     try:
         info = get_vehicle_frame_info(scene, vehicle, test_data_root, is_test=True)
         print(f"✓ {scene}/{vehicle}")
-        print(f"  GPS文件: {Path(info['gps_file']).name}")
-        print(f"  帧范围: {info['start_frame']}-{info['end_frame']} (1-based)")
-        print(f"  Python索引: [{info['start_index']}:{info['end_index']+1}] (0-based)")
-        print(f"  总帧数: {info['total_frames']}")
-        print(f"  验证: {info['end_index'] - info['start_index'] + 1} == {info['total_frames']} ✓")
+        print(f"  GPSFile: {Path(info['gps_file']).name}")
+        print(f"  Frame Range: {info['start_frame']}-{info['end_frame']} (1-based)")
+        print(f"  PythonIndex: [{info['start_index']}:{info['end_index']+1}] (0-based)")
+        print(f"  Total frames: {info['total_frames']}")
+        print(f"  Verify: {info['end_index'] - info['start_index'] + 1} == {info['total_frames']} ✓")
     except Exception as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ Error: {e}")
 
-    print("\n【测试3：训练集批量车辆】")
+    print("\n[Test3: Training Set Batch Vehicle] ")
     vehicles = ['Car1', 'Car4', 'Car5']
 
     try:
@@ -191,12 +191,12 @@ if __name__ == '__main__':
             is_test=False
         )
 
-        print(f"✓ 成功加载 {len(vehicles_info)}/{len(vehicles)} 个车辆")
+        print(f"✓ Successfully loaded {len(vehicles_info)}/{len(vehicles)} vehicles")
         for veh, info in vehicles_info.items():
-            print(f"  {veh}: 帧{info['start_frame']}-{info['end_frame']} ({info['total_frames']}帧)")
+            print(f"  {veh}: Frame{info['start_frame']}-{info['end_frame']} ({info['total_frames']}Frame)")
     except Exception as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ Error: {e}")
 
     print("\n" + "=" * 70)
-    print("测试完成！")
+    print("Test Complete! ")
     print("=" * 70)

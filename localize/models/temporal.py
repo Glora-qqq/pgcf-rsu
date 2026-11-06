@@ -1,4 +1,4 @@
-"""用 Transformer 对融合后的特征做时间建模。"""
+"""For Transformer Temporal modeling of fused features. """
 
 import torch
 import torch.nn as nn

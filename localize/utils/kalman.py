@@ -1,4 +1,4 @@
-"""地面车辆使用的二维卡尔曼平滑。"""
+"""2D Kalman Smoothing for Ground Vehicles. """
 
 import numpy as np
 from typing import Optional, Union
@@ -178,14 +178,14 @@ if __name__ == '__main__':
     original_error_y = np.mean(np.abs(noisy_y - true_y))
     smoothed_error_y = np.mean(np.abs(smoothed[:, 1] - true_y))
 
-    print(f"X轴:")
-    print(f"  原始误差:   {original_error_x:.3f}m")
-    print(f"  平滑后误差: {smoothed_error_x:.3f}m")
-    print(f"  改善:       {(1 - smoothed_error_x/original_error_x)*100:.1f}%")
+    print(f"XAxis:")
+    print(f"  Raw error:   {original_error_x:.3f}m")
+    print(f"  Post-smoothing error: {smoothed_error_x:.3f}m")
+    print(f"  Improvement:       {(1 - smoothed_error_x/original_error_x)*100:.1f}%")
 
-    print(f"\nY轴:")
-    print(f"  原始误差:   {original_error_y:.3f}m")
-    print(f"  平滑后误差: {smoothed_error_y:.3f}m")
-    print(f"  改善:       {(1 - smoothed_error_y/original_error_y)*100:.1f}%")
+    print(f"\nYAxis:")
+    print(f"  Raw error:   {original_error_y:.3f}m")
+    print(f"  Post-smoothing error: {smoothed_error_y:.3f}m")
+    print(f"  Improvement:       {(1 - smoothed_error_y/original_error_y)*100:.1f}%")
 
-    print("\n✓ 卡尔曼滤波模块测试通过")
+    print("\n✓ Kalman filter module test passed")

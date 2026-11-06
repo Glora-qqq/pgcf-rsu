@@ -1,4 +1,4 @@
-"""按完整序列读取 CSI、掩码和视觉特征，供导出使用。"""
+"""Read in full sequence CSI, Masks and visual features, For export. """
 
 import numpy as np
 import torch
@@ -49,7 +49,7 @@ def load_train_csi(
         csi_file = csi_dir / f'{rsf}_{vehicle_csi}_CSI.mat'
 
     if not csi_file.exists():
-        print(f"[WARNING] CSI文件不存在: {csi_file}")
+        print(f"[WARNING] CSIFile does not exist: {csi_file}")
         return None
 
     try:
@@ -72,7 +72,7 @@ def load_train_csi(
                     break
 
         if csi_raw is None:
-            print(f"[WARNING] 找不到CSI数据")
+            print(f"[WARNING] Not foundCSIData")
             return None
 
         if csi_raw.dtype == object:
@@ -87,7 +87,7 @@ def load_train_csi(
                         elif frame_data.shape == (32, 128):
                             frame_list.append(frame_data.T)
                         else:
-                            print(f"[WARNING] 帧{i}维度异常: {frame_data.shape}")
+                            print(f"[WARNING] Frame{i}Dimension Exception: {frame_data.shape}")
                             frame_list.append(np.zeros((128, 32), dtype=complex))
                     else:
                         frame_list.append(np.zeros((128, 32), dtype=complex))
@@ -95,10 +95,10 @@ def load_train_csi(
                 if len(frame_list) > 0:
                     csi_data = np.stack(frame_list, axis=0)
                 else:
-                    print(f"[WARNING] 无有效帧")
+                    print(f"[WARNING] No valid frame")
                     return None
             else:
-                print(f"[WARNING] object数组格式不支持: {csi_raw.shape}")
+                print(f"[WARNING] objectArray format not supported: {csi_raw.shape}")
                 return None
 
         elif csi_raw.ndim == 3:
@@ -110,7 +110,7 @@ def load_train_csi(
                 csi_data = csi_raw
 
         else:
-            print(f"[WARNING] CSI维度不符合预期: {csi_raw.shape}, dtype={csi_raw.dtype}")
+            print(f"[WARNING] CSIDimension does not meet expectations: {csi_raw.shape}, dtype={csi_raw.dtype}")
             return None
 
         T = csi_data.shape[0]
@@ -127,7 +127,7 @@ def load_train_csi(
         return csi_output
 
     except Exception as e:
-        print(f"[ERROR] 加载CSI失败: {e}")
+        print(f"[ERROR] LoadCSIFailed: {e}")
         return None
 
 def load_train_mask(
@@ -144,7 +144,7 @@ def load_train_mask(
     mask_file = mask_root / scene / rsf / f'{vehicle_mask}_mask.npy'
 
     if not mask_file.exists():
-        print(f"[WARNING] Mask文件不存在: {mask_file}")
+        print(f"[WARNING] MaskFile does not exist: {mask_file}")
         return np.zeros(num_frames, dtype=np.float32)
 
     try:
@@ -159,7 +159,7 @@ def load_train_mask(
         return mask.astype(np.float32)
 
     except Exception as e:
-        print(f"[ERROR] 加载Mask失败: {e}")
+        print(f"[ERROR] LoadMaskFailed: {e}")
         return np.zeros(num_frames, dtype=np.float32)
 
 def load_train_rgb(
@@ -174,7 +174,7 @@ def load_train_rgb(
     rgb_file = rgb_root / f'{scene}_{rsf}_features.npz'
 
     if not rgb_file.exists():
-        print(f"[WARNING] RGB文件不存在: {rgb_file}")
+        print(f"[WARNING] RGBFile does not exist: {rgb_file}")
         if frame_range:
             T = frame_range[1] - frame_range[0] + 1
             return np.zeros((T, feature_dim), dtype=np.float32)
@@ -185,7 +185,7 @@ def load_train_rgb(
         data = np.load(rgb_file)
 
         if 'fused' not in data:
-            print(f"[WARNING] 找不到'fused'特征，可用keys: {list(data.keys())}")
+            print(f"[WARNING] Not found'fused'Features, Availablekeys: {list(data.keys())}")
             if frame_range:
                 T = frame_range[1] - frame_range[0] + 1
                 return np.zeros((T, feature_dim), dtype=np.float32)
@@ -201,7 +201,7 @@ def load_train_rgb(
         return rgb_features.astype(np.float32)
 
     except Exception as e:
-        print(f"[ERROR] 加载RGB失败: {e}")
+        print(f"[ERROR] LoadRGBFailed: {e}")
         if frame_range:
             T = frame_range[1] - frame_range[0] + 1
             return np.zeros((T, feature_dim), dtype=np.float32)
@@ -234,7 +234,7 @@ def load_vehicle_data_for_extraction(
         )
 
     if csi_data is None:
-        raise RuntimeError(f"无法加载CSI数据: {scene}/{rsf}/{vehicle}")
+        raise RuntimeError(f"Unable to loadCSIData: {scene}/{rsf}/{vehicle}")
 
     if is_test:
         mask_data = load_test_mask(

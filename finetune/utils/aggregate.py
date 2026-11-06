@@ -1,4 +1,4 @@
-"""把 patch 特征聚合成与 GPS 对齐的帧级特征。"""
+"""Put the patch Feature aggregation vs. GPS Aligned Frame-Level Features. """
 
 import numpy as np
 import torch
@@ -22,7 +22,7 @@ def patch_to_frame_features(
 
     expected_L = t * h * w
     if L != expected_L:
-        raise ValueError(f"Patch数量不匹配: 期望{expected_L}，实际{L}")
+        raise ValueError(f"PatchQuantity mismatch: Expectations{expected_L}, Actual{L}")
 
     patch_features = patch_features.reshape(B, t, h * w, D)
 
@@ -63,7 +63,7 @@ def aggregate_window_features_to_frames(
 
     if not valid_mask.all():
         invalid_indices = np.where(~valid_mask)[0]
-        print(f"[INFO] {len(invalid_indices)} 个边界帧使用最近邻插值")
+        print(f"[INFO] {len(invalid_indices)} boundary frames using nearest neighbor interpolation")
 
         for idx in invalid_indices:
             if idx > 0:
@@ -97,31 +97,31 @@ def crop_features_by_gps(
     if verify:
         if features_vehicle.shape[0] != total:
             raise ValueError(
-                f"特征截取长度不匹配: "
-                f"期望{total}帧，实际{features_vehicle.shape[0]}帧"
+                f"Feature intercept length mismatch: "
+                f"Expectations{total}Frame, Actual{features_vehicle.shape[0]}Frame"
             )
 
     return features_vehicle
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("特征聚合工具测试")
+    print("Feature Aggregation Tool Test")
     print("=" * 70)
 
-    print("\n【测试1：Patch → 帧特征】")
+    print("\n[Test1: Patch → Frame characteristics] ")
     B, T, H, W = 2, 60, 128, 32
     t, h, w = T // 4, H // 4, W // 4
     L = t * h * w
     D = 512
 
     patch_features = torch.randn(B, L, D)
-    print(f"输入Patch特征: {patch_features.shape}")
+    print(f"InputPatchFeatures: {patch_features.shape}")
 
     frame_features = patch_to_frame_features(patch_features, T, H, W)
-    print(f"输出帧特征: {frame_features.shape}")
-    print(f"✓ 转换成功: [B, L, D] → [B, T, D]")
+    print(f"Output frame characteristics: {frame_features.shape}")
+    print(f"✓ Conversion successful: [B, L, D] → [B, T, D]")
 
-    print("\n【测试2：滑窗聚合】")
+    print("\n[Test2: Sliding Window Aggregation] ")
     window_size = 60
     stride = 5
     total_frames = 1500
@@ -137,8 +137,8 @@ if __name__ == '__main__':
         window_features_list.append(window_feat)
         window_start_indices.append(start_idx)
 
-    print(f"窗口数: {len(window_features_list)}")
-    print(f"每个窗口: [{window_size}, {feature_dim}]")
+    print(f"Number of windows: {len(window_features_list)}")
+    print(f"Each window: [{window_size}, {feature_dim}]")
 
     frame_features = aggregate_window_features_to_frames(
         window_features_list,
@@ -148,10 +148,10 @@ if __name__ == '__main__':
         feature_dim
     )
 
-    print(f"聚合后特征: {frame_features.shape}")
-    print(f"✓ 聚合成功: {num_windows}个窗口 → {total_frames}帧")
+    print(f"Post-aggregation features: {frame_features.shape}")
+    print(f"✓ Aggregation successful: {num_windows}windows → {total_frames}Frame")
 
-    print("\n【测试3：GPS截取】")
+    print("\n[Test3: GPSIntercept] ")
     features_full = np.random.randn(1500, 512).astype(np.float32)
 
     gps_info = {
@@ -164,12 +164,12 @@ if __name__ == '__main__':
 
     features_vehicle = crop_features_by_gps(features_full, gps_info)
 
-    print(f"完整特征: {features_full.shape}")
-    print(f"GPS范围: 帧{gps_info['start_frame']}-{gps_info['end_frame']} (共{gps_info['total_frames']}帧)")
-    print(f"截取索引: [{gps_info['start_index']}:{gps_info['start_index']+gps_info['total_frames']}]")
-    print(f"车辆特征: {features_vehicle.shape}")
-    print(f"✓ 截取成功: 长度验证 {features_vehicle.shape[0]} == {gps_info['total_frames']}")
+    print(f"Complete features: {features_full.shape}")
+    print(f"GPSScope: Frame{gps_info['start_frame']}-{gps_info['end_frame']} (of{gps_info['total_frames']}Frame)")
+    print(f"Intercept index: [{gps_info['start_index']}:{gps_info['start_index']+gps_info['total_frames']}]")
+    print(f"Vehicle characteristics: {features_vehicle.shape}")
+    print(f"✓ Successfully intercepted: Length Verification {features_vehicle.shape[0]} == {gps_info['total_frames']}")
 
     print("\n" + "=" * 70)
-    print("所有测试通过！")
+    print("All tests passed! ")
     print("=" * 70)

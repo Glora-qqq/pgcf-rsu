@@ -1,4 +1,4 @@
-"""训练三视角视觉特征融合模型。"""
+"""Training a three-view visual feature fusion model. """
 
 import os
 import sys
@@ -137,7 +137,7 @@ def validate(
         consist_meter.update(loss_dict['consistency'], batch_size)
         contrast_meter.update(loss_dict['contrast'], batch_size)
 
-    print(f"  验证 Loss: {loss_meter.avg:.4f} "
+    print(f"  Verify Loss: {loss_meter.avg:.4f} "
           f"(R:{recon_meter.avg:.4f} C:{consist_meter.avg:.4f} Con:{contrast_meter.avg:.4f})")
 
     return loss_meter.avg
@@ -145,37 +145,37 @@ def validate(
 def main():
 
     print("\n" + "="*70)
-    print("三视角环境特征融合训练")
+    print("Three view environmental feature fusion training")
     print("="*70)
-    print(f"开始时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Start time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    print("\n【步骤1】验证配置")
+    print("\n[Step1] Validate Configuration")
     print_config()
     if not validate_config():
         return
 
     set_seed(RANDOM_SEED)
-    print(f"✅ 随机种子: {RANDOM_SEED}")
+    print(f"✅ Random Seeds: {RANDOM_SEED}")
 
     os.makedirs(FUSION_OUTPUT_DIR, exist_ok=True)
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
 
-    print("\n【步骤2】准备数据")
+    print("\n[Step2] Prepare data")
     all_samples = create_sample_list(SCENES, TRAIN_FEATURE_DIR)
-    print(f"  总样本数: {len(all_samples)}")
+    print(f"  Total Samples: {len(all_samples)}")
 
     if USE_VALIDATION:
         train_samples, val_samples = split_train_val(all_samples, VAL_RATIO, RANDOM_SEED)
-        print(f"  训练样本: {len(train_samples)}")
-        print(f"  验证样本: {len(val_samples)}")
+        print(f"  Training Samples: {len(train_samples)}")
+        print(f"  Validate Sample: {len(val_samples)}")
     else:
         train_samples = all_samples
         val_samples = []
-        print(f"  训练样本: {len(train_samples)} (不使用验证集)")
-        print(f"  将通过训练损失判断收敛")
+        print(f"  Training Samples: {len(train_samples)} (Don't use validation sets)")
+        print(f"  The convergence will be judged by the training loss")
 
-    print("\n【步骤3】创建数据加载器")
+    print("\n[Step3] Create Data Loader")
     train_loader, val_loader = create_dataloaders(
         train_samples=train_samples,
         val_samples=val_samples,
@@ -184,15 +184,15 @@ def main():
         num_workers=NUM_WORKERS
     )
 
-    print("\n【步骤4】创建模型")
+    print("\n[Step4] Create Model")
     model = create_fusion_model(MODEL_CONFIG)
-    print(f"  模型参数量: {sum(p.numel() for p in model.parameters())/1e6:.2f}M")
+    print(f"  Number of model parameters: {sum(p.numel() for p in model.parameters())/1e6:.2f}M")
 
     device = torch.device(DEVICE)
     model = model.to(device)
-    print(f"  设备: {device}")
+    print(f"  Equipment: {device}")
 
-    print("\n【步骤5】创建优化器")
+    print("\n[Step5] Create Optimizer")
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=LEARNING_RATE,
@@ -213,12 +213,12 @@ def main():
             gamma=0.5
         )
 
-    print(f"  学习率: {LEARNING_RATE}")
-    print(f"  调度器: {LR_SCHEDULER}")
+    print(f"  Learning Rate: {LEARNING_RATE}")
+    print(f"  Scheduler: {LR_SCHEDULER}")
 
     criterion = FusionLoss(LOSS_WEIGHTS)
 
-    print("\n【步骤6】开始训练")
+    print("\n[Step6] Start training")
     print("="*70)
 
     best_val_loss = float('inf')
@@ -274,31 +274,31 @@ def main():
                 checkpoint_path=best_checkpoint_path,
                 is_best=True
             )
-            print(f"  💾 保存最优模型: {best_checkpoint_path}")
+            print(f"  💾 Save optimal model: {best_checkpoint_path}")
         else:
             patience_counter += 1
 
         epoch_time = time.time() - epoch_start
 
         if USE_VALIDATION:
-            print(f"\nEpoch {epoch+1} 完成 - "
+            print(f"\nEpoch {epoch+1} Done - "
                   f"Train Loss: {train_loss:.4f}, "
                   f"Val Loss: {val_loss:.4f}, "
                   f"LR: {current_lr:.6f}, "
                   f"Time: {format_time(epoch_time)}")
             if is_best:
-                print(f"🎉 新的最优验证损失: {best_val_loss:.4f}")
+                print(f"🎉 New Optimal Validation Loss: {best_val_loss:.4f}")
         else:
-            print(f"\nEpoch {epoch+1} 完成 - "
+            print(f"\nEpoch {epoch+1} Done - "
                   f"Train Loss: {train_loss:.4f}, "
                   f"LR: {current_lr:.6f}, "
                   f"Time: {format_time(epoch_time)}")
             if is_best:
-                print(f"🎉 新的最优训练损失: {best_val_loss:.4f}")
+                print(f"🎉 New Optimal Training Loss: {best_val_loss:.4f}")
 
         if EARLY_STOPPING and patience_counter >= PATIENCE:
-            print(f"\n⚠️  Early Stopping触发：连续{PATIENCE}个epochs无改进")
-            print(f"   最优损失: {best_val_loss:.4f} (Epoch {epoch+1-PATIENCE})")
+            print(f"\n⚠️  Early StoppingTrigger: Continuous{PATIENCE}PieceepochsNo improvement")
+            print(f"   Optimal Loss: {best_val_loss:.4f} (Epoch {epoch+1-PATIENCE})")
             break
 
     if SAVE_LAST:
@@ -313,13 +313,13 @@ def main():
             checkpoint_path=last_checkpoint_path,
             is_best=False
         )
-        print(f"  💾 保存最后epoch: {last_checkpoint_path}\n")
+        print(f"  💾 Save lastepoch: {last_checkpoint_path}\n")
 
     print("\n" + "="*70)
-    print("✅ 训练完成！")
-    print(f"最优验证损失: {best_val_loss:.4f}")
-    print(f"模型保存路径: {os.path.join(CHECKPOINT_DIR, 'fusion_best.pth')}")
-    print(f"结束时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("✅ Training Complete! ")
+    print(f"Optimal Validation Loss: {best_val_loss:.4f}")
+    print(f"Model Save Path: {os.path.join(CHECKPOINT_DIR, 'fusion_best.pth')}")
+    print(f"End time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*70 + "\n")
 
 if __name__ == '__main__':

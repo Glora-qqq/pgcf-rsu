@@ -1,4 +1,4 @@
-"""定位推理的测试车辆、滤波开关和轨迹输出路径。"""
+"""Positioning Reasoning Test Vehicle, Filter switches and trajectory output paths. """
 
 import os
 from pathlib import Path
@@ -81,20 +81,20 @@ RSF_EXTRINSIC_FILENAME_TEMPLATE = "RSF_position_{scene_id}.txt"
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("PGCF-RSU 定位推理配置")
+    print("PGCF-RSU Positioning Reasoning Configuration")
     print("=" * 60)
-    print(f"测试数据根目录: {TEST_DATA_ROOT}")
-    print(f"WiFo特征根目录: {TEST_WIFO_FEATURES_ROOT}")
-    print(f"模型检查点路径: {MODEL_CHECKPOINT_PATH}")
-    print(f"测试输出目录: {TEST_OUTPUT_ROOT}")
-    print(f"\n场景目录映射:")
+    print(f"Test Data Root: {TEST_DATA_ROOT}")
+    print(f"WiFoFeature Root: {TEST_WIFO_FEATURES_ROOT}")
+    print(f"Model Checkpoint Path: {MODEL_CHECKPOINT_PATH}")
+    print(f"Test Output Directory: {TEST_OUTPUT_ROOT}")
+    print(f"\nScene catalog mapping:")
     for scene, scene_dir in SCENE_DIR_MAPPING.items():
         print(f"  {scene} -> {scene_dir}")
-    print(f"\n测试车辆统计:")
+    print(f"\nTest Vehicle Statistics:")
     for scene, vehicles in TEST_VEHICLES.items():
-        print(f"  {scene}: {len(vehicles)} 辆车")
-    print(f"  总计: {sum(len(v) for v in TEST_VEHICLES.values())} 辆车")
-    print(f"\n场景RSF配置:")
+        print(f"  {scene}: {len(vehicles)} cars")
+    print(f"  Total: {sum(len(v) for v in TEST_VEHICLES.values())} cars")
+    print(f"\nScenarioRSFConfiguration:")
     for scene, rsfs in SCENE_RSF_CONFIG.items():
         print(f"  {scene}: {rsfs}")
     print("=" * 60)

@@ -1,4 +1,4 @@
-"""WiFo 渐进门控微调的数据、模型和优化配置。"""
+"""WiFo Data for progressive gating fine-tuning, Models and Optimized Configurations. """
 
 import os
 import platform
@@ -142,12 +142,12 @@ def validate_paths():
             missing_paths.append(f"  ❌ {name}: {path}")
 
     if missing_paths:
-        print("[WARNING] 以下路径不存在:")
+        print("[WARNING] The following paths do not exist:")
         for path in missing_paths:
             print(path)
         return False
 
-    print("[OK] 关键路径验证通过")
+    print("[OK] Critical path validation passed")
     return True
 
 def create_output_dirs():
@@ -160,77 +160,77 @@ def create_output_dirs():
     for dir_path in output_dirs:
         dir_path.mkdir(parents=True, exist_ok=True)
 
-    print("[INFO] 输出目录已创建:")
-    print(f"  检查点: {CHECKPOINT_ROOT}")
-    print(f"  日志: {LOG_ROOT}")
+    print("[INFO] Output directory created:")
+    print(f"  Checkpoint: {CHECKPOINT_ROOT}")
+    print(f"  Log: {LOG_ROOT}")
 
 def print_config():
 
     print("="*80)
-    print("PGCF-RSU 微调配置")
+    print("PGCF-RSU Fine-tune configuration")
     print("="*80)
 
-    print(f"\n[项目路径]")
-    print(f"  项目根目录: {PROJECT_ROOT}")
-    print(f"  微调目录: {TRAIN_WIFO_ROOT}")
+    print(f"\n[Project Path]")
+    print(f"  Project Root: {PROJECT_ROOT}")
+    print(f"  Fine Tune Table of Contents: {TRAIN_WIFO_ROOT}")
 
-    print(f"\n[数据路径]")
-    print(f"  CSI数据: {CSI_DATA_ROOT}")
-    print(f"  Mask文件: {MASK_ROOT}")
-    print(f"  DINOv2特征: {RGB_FEATURE_ROOT}")
-    print(f"    {'✅ 存在' if RGB_FEATURE_ROOT.exists() else '❌ 不存在（需要确认）'}")
+    print(f"\n[Data Path]")
+    print(f"  CSIData: {CSI_DATA_ROOT}")
+    print(f"  MaskFile: {MASK_ROOT}")
+    print(f"  DINOv2Features: {RGB_FEATURE_ROOT}")
+    print(f"    {'✅ Present' if RGB_FEATURE_ROOT.exists() else '❌ Absent (Confirmation required) '}")
 
-    print("\n[预训练权重]")
-    print(f"  Case Study目录: {CASE_STUDY_ROOT}")
-    print(f"  预训练权重: {WIFO_RGB_PRETRAIN_PATH}")
-    print(f"    {'✅ 存在' if WIFO_RGB_PRETRAIN_PATH.exists() else '❌ 不存在'}")
+    print("\n[Pre-trained weights]")
+    print(f"  Case StudyContents: {CASE_STUDY_ROOT}")
+    print(f"  Pre-trained weights: {WIFO_RGB_PRETRAIN_PATH}")
+    print(f"    {'✅ Present' if WIFO_RGB_PRETRAIN_PATH.exists() else '❌ Absent'}")
 
-    print(f"\n[场景配置]")
-    print(f"  训练场景: {SCENES}")
+    print(f"\n[Scenario Configuration]")
+    print(f"  Training Scenarios: {SCENES}")
     for scene, rsf_list in SCENE_RSF_CONFIG.items():
         print(f"    {scene}: {rsf_list}")
 
-    print(f"\n[数据配置]")
+    print(f"\n[Data Configuration]")
     print(f"  CSI: {CSI_CONFIG['num_channels']} x {CSI_CONFIG['num_frames']} x {CSI_CONFIG['height']} x {CSI_CONFIG['width']}")
-    print(f"  RGB特征: [1500, {RGB_CONFIG['feature_dim']}]")
-    print(f"  滑动窗口: {WINDOW_CONFIG['window_size']}帧, 步长{WINDOW_CONFIG['stride']}, 最少{WINDOW_CONFIG['min_valid_frames']}帧")
+    print(f"  RGBFeatures: [1500, {RGB_CONFIG['feature_dim']}]")
+    print(f"  Slide Window: {WINDOW_CONFIG['window_size']}Frame, Step{WINDOW_CONFIG['stride']}, Min{WINDOW_CONFIG['min_valid_frames']}Frame")
 
-    print(f"\n[模型配置]")
-    print(f"  架构: GatedWiFo {MODEL_CONFIG['model_size']}")
-    print(f"  Embed维度: {MODEL_CONFIG['embed_dim']}")
-    print(f"  Encoder深度: {MODEL_CONFIG['depth']}")
-    print(f"  Decoder深度: {MODEL_CONFIG['decoder_depth']}")
-    print(f"  RGB投影: {MODEL_CONFIG['rgb_input_dim']} → {MODEL_CONFIG['rgb_output_dim']}")
+    print(f"\n[Model Configuration]")
+    print(f"  Architecture: GatedWiFo {MODEL_CONFIG['model_size']}")
+    print(f"  EmbedDimension: {MODEL_CONFIG['embed_dim']}")
+    print(f"  EncoderDepth: {MODEL_CONFIG['depth']}")
+    print(f"  DecoderDepth: {MODEL_CONFIG['decoder_depth']}")
+    print(f"  RGBProjection: {MODEL_CONFIG['rgb_input_dim']} → {MODEL_CONFIG['rgb_output_dim']}")
 
-    print(f"\n[训练配置（针对小数据量）]")
-    print(f"  ⚠️  数据量: 82样本, ~18K窗口（较少！）")
-    print(f"  目标: 提取CSI特征（而非重建）")
+    print(f"\n[Training Configuration (For small data volumes) ]")
+    print(f"  ⚠️  Amount of data: 82Sample, ~18KWindow (Less! ) ")
+    print(f"  Objectives: ExtractCSIFeatures (Rather than rebuilding) ")
     print(f"  Batch size: {TRAIN_CONFIG['batch_size']}")
-    print(f"  Epochs: {TRAIN_CONFIG['num_epochs']} (防止过拟合)")
-    print(f"  学习率: {TRAIN_CONFIG['learning_rate']}")
-    print(f"  Weight decay: {TRAIN_CONFIG['weight_decay']} (正则化)")
+    print(f"  Epochs: {TRAIN_CONFIG['num_epochs']} (Prevent overfitting)")
+    print(f"  Learning Rate: {TRAIN_CONFIG['learning_rate']}")
+    print(f"  Weight decay: {TRAIN_CONFIG['weight_decay']} (Regularization)")
     print(f"  Num workers: {TRAIN_CONFIG['num_workers']}")
     print(f"  GPU IDs: {TRAIN_CONFIG['gpu_ids']}")
-    print(f"  RGB聚合: {RGB_CONFIG['aggregation_strategy']}")
+    print(f"  RGBAggregation: {RGB_CONFIG['aggregation_strategy']}")
 
-    print(f"\n[微调策略（最保守，最适合小数据）]")
-    print(f"  🎯 目标: 提取CSI特征（保留预训练知识 + 适配RGB）")
-    print(f"  Encoder: {'冻结✅' if FREEZE_CONFIG['freeze_encoder'] else '微调'} (保留预训练 CSI 编码器)")
-    print(f"  RGB投影: {'冻结' if FREEZE_CONFIG['freeze_rgb_proj'] else '微调✅'} (唯一微调，让RGB适配)")
-    print(f"  Decoder: {'冻结✅' if FREEZE_CONFIG['freeze_decoder'] else '微调'} (只用于训练信号)")
-    print(f"  可训练参数: ~1M (2%) - 最保险！")
-    print(f"  样本/参数比: 18K/1M = 0.018 (非常健康)")
-    print(f"  ✅ 优势: 几乎不会过拟合，完全保留预训练CSI知识")
+    print(f"\n[Fine-tune strategy (Most conservative, Best for small data) ]")
+    print(f"  🎯 Objectives: ExtractCSIFeatures (Retain pre-trained knowledge + FitRGB) ")
+    print(f"  Encoder: {'Freeze✅' if FREEZE_CONFIG['freeze_encoder'] else 'Fine-tuning'} (Preserve pre-training CSI Encoder)")
+    print(f"  RGBProjection: {'Freeze' if FREEZE_CONFIG['freeze_rgb_proj'] else 'Fine-tuning✅'} (Unique fine-tuning, LetRGBFit)")
+    print(f"  Decoder: {'Freeze✅' if FREEZE_CONFIG['freeze_decoder'] else 'Fine-tuning'} (For training signals only)")
+    print(f"  Trainable Parameters: ~1M (2%) - Most insured! ")
+    print(f"  Sample/Parameter Ratio: 18K/1M = 0.018 (Very healthy)")
+    print(f"  ✅ Strengths: Hardly overfit, Full retention pre-trainingCSIKnowledge")
 
     print("="*80)
 
 if __name__ == '__main__':
     print_config()
 
-    print(f"\n[验证路径]")
+    print(f"\n[Validation Path]")
     validate_paths()
 
-    print(f"\n[创建输出目录]")
+    print(f"\n[Create Output Directory]")
     create_output_dirs()
 
-    print(f"\n[完成]")
+    print(f"\n[Done]")

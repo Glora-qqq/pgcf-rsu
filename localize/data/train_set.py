@@ -1,4 +1,4 @@
-"""组装训练用的多路侧特征、GPS、真值和几何量。"""
+"""Multi-way side features for assembly training, GPS, Truth and geometry. """
 
 import numpy as np
 import torch
@@ -63,7 +63,7 @@ class Pose6DLoader:
             return rgb_features_window, rgb_mask_window
 
         except Exception as e:
-            print(f"加载RGB特征失败 {filepath}: {e}")
+            print(f"LoadRGBFeature Failure {filepath}: {e}")
             return None
 
     @staticmethod
@@ -193,14 +193,14 @@ class MultiRSFPose6DDataset(Dataset):
             rsf_list = self.rsf_config.get(scene, [])
             scene_counts[scene] = len(rsf_list)
 
-        print(f"场景RSF数量分析: {scene_counts}")
+        print(f"ScenarioRSFQuantitative analysis: {scene_counts}")
         return scene_counts
 
     def _load_all_data(self):
 
         for scene_name in self.scenes:
             print(f"\n{'='*60}")
-            print(f"正在加载场景: {scene_name}")
+            print(f"Loading Scenes: {scene_name}")
             print(f"{'='*60}")
 
             scene_path = self.data_root / scene_name
@@ -300,27 +300,27 @@ class MultiRSFPose6DDataset(Dataset):
             scene_stats[scene].add(vehicle)
 
         print(f"\n{'='*60}")
-        print(f"成功加载 {len(self.samples)} 个样本")
+        print(f"Successfully loaded {len(self.samples)} samples")
         print(f"{'='*60}")
 
         for scene in sorted(scene_stats.keys()):
             vehicles = sorted(scene_stats[scene])
-            print(f"\n【{scene}】: {len(vehicles)}辆车")
-            print(f"  车辆列表: {vehicles}")
+            print(f"\n[{scene}] : {len(vehicles)}cars")
+            print(f"  Vehicle List: {vehicles}")
 
             expected_rsf = len(self.rsf_config.get(scene, []))
-            print(f"  期望RSF数: {expected_rsf}")
+            print(f"  ExpectationsRSFNumber: {expected_rsf}")
 
             for vehicle in vehicles:
                 key = f"{scene}/{vehicle}"
                 rsf_list = rsf_stats[key]
                 num_samples = sample_stats[key]
-                print(f"    {vehicle}: {num_samples}个样本, {len(rsf_list)}个RSF {sorted(rsf_list)}")
+                print(f"    {vehicle}: {num_samples}samples, {len(rsf_list)}PieceRSF {sorted(rsf_list)}")
 
         print(f"\n{'='*60}")
-        print(f"总样本数: {len(self.samples)}")
-        print(f"说明：完整轨迹模式下，每辆车=1个样本（包含所有RSF数据）")
-        print(f"期望样本数: Scene1(6车) + Scene2(6车) + Scene3(10车) = 22辆车")
+        print(f"Total Samples: {len(self.samples)}")
+        print(f"Description: In Full Trajectory Mode, per vehicle=1samples (Include allRSFData) ")
+        print(f"Expected number of samples: Scene1(6Car) + Scene2(6Car) + Scene3(10Car) = 22cars")
         print(f"{'='*60}\n")
 
     def __len__(self):
@@ -390,7 +390,7 @@ class MultiRSFPose6DDataset(Dataset):
                         ).float()
 
                 except Exception as e:
-                    print(f"警告：WiFo特征加载失败 {scene_name}/{vehicle_name}/{rsf_name}: {e}")
+                    print(f"Warning: WiFoFeature loading failed {scene_name}/{vehicle_name}/{rsf_name}: {e}")
                     if 'start_idx' in sample:
                         T = sample['window_length']
                     else:
@@ -499,7 +499,7 @@ class MultiRSFPose6DDataset(Dataset):
             }
 
         except Exception as e:
-            print(f"加载样本失败 {idx}: {e}")
+            print(f"Failed to load samples {idx}: {e}")
             return None
 
     def _apply_input_kalman(self, gps_poses_6d: torch.Tensor, scene_name: str, vehicle_name: str) -> torch.Tensor:
@@ -533,7 +533,7 @@ class MultiRSFPose6DDataset(Dataset):
                             process_noise_ori=process_noise_ori,
                             measurement_noise_ori=measurement_noise_ori
                         )
-                        print(f"  [UKF] AT车辆 {vehicle_name}: 6D UKF滤波完成（xyz+姿态）")
+                        print(f"  [UKF] ATVehicle {vehicle_name}: 6D UKFFilter complete (xyz+Posture) ")
                     else:
                         positions = gps_np[:, :3]
                         orientations = gps_np[:, 3:6]
@@ -546,14 +546,14 @@ class MultiRSFPose6DDataset(Dataset):
                         )
 
                         smoothed_np = np.column_stack([positions_filtered, orientations])
-                        print(f"  [UKF] AT车辆 {vehicle_name}: 3D UKF滤波完成（xyz）")
+                        print(f"  [UKF] ATVehicle {vehicle_name}: 3D UKFFilter complete (xyz) ")
 
                 except Exception as e:
-                    print(f"  [UKF] [WARNING] AT车辆 {vehicle_name} UKF滤波失败: {e}，使用原始GPS")
+                    print(f"  [UKF] [WARNING] ATVehicle {vehicle_name} UKFFailure to filter: {e}, Use originalGPS")
                     smoothed_np = gps_np
             else:
                 smoothed_np = gps_np
-                print(f"  [Info] AT车辆 {vehicle_name}: 未启用UKF，使用原始GPS")
+                print(f"  [Info] ATVehicle {vehicle_name}: Not enabledUKF, Use originalGPS")
 
         else:
             from utils.kalman import apply_kalman_smoothing
@@ -568,7 +568,7 @@ class MultiRSFPose6DDataset(Dataset):
                 measurement_noise=measurement_noise
             )
 
-            print(f"  [Kalman] Car车辆 {vehicle_name}: 2D卡尔曼滤波完成（XY降噪）")
+            print(f"  [Kalman] CarVehicle {vehicle_name}: 2DKalman filtering complete (XYNoise Reduction) ")
 
         if not vehicle_name.startswith('AT'):
             if hasattr(self, 'config') and getattr(self.config, 'use_orientation_noise', False):
@@ -582,7 +582,7 @@ class MultiRSFPose6DDataset(Dataset):
                 smoothed_np[:, 3:6] = orientations_noisy
                 if getattr(self.config, 'verbose', False):
                     from tqdm import tqdm
-                    tqdm.write(f"  [Noise] Car车辆 {vehicle_name}: 姿态角噪声添加完成")
+                    tqdm.write(f"  [Noise] CarVehicle {vehicle_name}: Attitude Angle Noise Addition Complete")
 
         if is_tensor:
             smoothed_gps = torch.from_numpy(smoothed_np).float()
@@ -637,7 +637,7 @@ class MultiRSFPose6DDataLoader:
             return None
 
         if len(batch) > 1:
-            print(f"警告：batch_size={len(batch)} > 1，轨迹长度可能不同，建议设置batch_size=1")
+            print(f"Warning: batch_size={len(batch)} > 1, Track length may vary, Suggested settingsbatch_size=1")
 
         sample = batch[0]
 

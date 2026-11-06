@@ -1,4 +1,4 @@
-"""随机种子、视角角度、损失和 checkpoint 读写。"""
+"""Random Seeds, Angle of view, Losses and checkpoint Read/Write. """
 
 import os
 import random
@@ -45,13 +45,13 @@ def create_sample_list(scenes_config: dict, feature_dir: str) -> List[Tuple[str,
 
         scene_dir = os.path.join(feature_dir, scene_name)
         if not os.path.exists(scene_dir):
-            print(f"⚠️  场景目录不存在: {scene_dir}")
+            print(f"⚠️  Scene directory does not exist: {scene_dir}")
             continue
 
         for rsf_name in rsf_list:
             rsf_dir = os.path.join(scene_dir, rsf_name)
             if not os.path.exists(rsf_dir):
-                print(f"⚠️  RSF目录不存在: {rsf_dir}")
+                print(f"⚠️  RSFDirectory does not exist: {rsf_dir}")
                 continue
 
             views_exist = all([
@@ -62,7 +62,7 @@ def create_sample_list(scenes_config: dict, feature_dir: str) -> List[Tuple[str,
             if views_exist:
                 samples.append((scene_name, rsf_name, scene_type))
             else:
-                print(f"⚠️  缺少完整视角: {scene_name}/{rsf_name}")
+                print(f"⚠️  Missing full perspective: {scene_name}/{rsf_name}")
 
     return samples
 

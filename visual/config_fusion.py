@@ -1,4 +1,4 @@
-"""三视角融合训练和推理的路径与场景配置。"""
+"""Three Perspectives Fusion Training and Reasoning Path and Scene Configuration. """
 
 import os
 
@@ -100,55 +100,55 @@ def validate_config():
     errors = []
 
     if not os.path.exists(TRAIN_FEATURE_DIR):
-        errors.append(f"训练特征目录不存在: {TRAIN_FEATURE_DIR}")
+        errors.append(f"Training feature directory does not exist: {TRAIN_FEATURE_DIR}")
 
     for scene_name, scene_config in SCENES.items():
         scene_dir = os.path.join(TRAIN_FEATURE_DIR, scene_name)
         if not os.path.exists(scene_dir):
-            errors.append(f"场景目录不存在: {scene_dir}")
+            errors.append(f"Scene directory does not exist: {scene_dir}")
         else:
             for rsf in scene_config['rsf_list']:
                 rsf_dir = os.path.join(scene_dir, rsf)
                 if not os.path.exists(rsf_dir):
-                    errors.append(f"RSF目录不存在: {rsf_dir}")
+                    errors.append(f"RSFDirectory does not exist: {rsf_dir}")
 
     import torch
     if DEVICE == 'cuda' and not torch.cuda.is_available():
-        errors.append("CUDA不可用")
+        errors.append("CUDANot available")
 
     if errors:
-        print("❌ 配置验证失败:")
+        print("❌ Configuration validation failed:")
         for error in errors:
             print(f"  - {error}")
         return False
 
-    print("✅ 配置验证通过")
+    print("✅ Configuration validation passed")
     return True
 
 def print_config():
 
     print("\n" + "="*70)
-    print("三视角融合训练配置")
+    print("Triangle Fusion Training Configuration")
     print("="*70)
 
-    print("\n【数据配置】")
+    print("\n[Data Configuration] ")
     for scene_name, scene_config in SCENES.items():
         print(f"  {scene_name}: {scene_config['num_rsf']} RSF ({scene_config['scene_type']})")
-    print(f"  视角数量: {len(VIEWS)}")
-    print(f"  特征维度: {FEATURE_DIM}")
-    print(f"  序列长度: {SEQUENCE_LENGTH}")
+    print(f"  Number of Viewing Angles: {len(VIEWS)}")
+    print(f"  Feature Dimensions: {FEATURE_DIM}")
+    print(f"  Sequence Length: {SEQUENCE_LENGTH}")
 
-    print("\n【模型配置】")
+    print("\n[Model Configuration] ")
     for key, value in MODEL_CONFIG.items():
         print(f"  {key}: {value}")
 
-    print("\n【训练配置】")
+    print("\n[Training Configuration] ")
     print(f"  Batch Size: {BATCH_SIZE}")
     print(f"  Epochs: {NUM_EPOCHS}")
     print(f"  Learning Rate: {LEARNING_RATE}")
-    print(f"  验证比例: {VAL_RATIO:.1%}")
+    print(f"  Validation ratio: {VAL_RATIO:.1%}")
 
-    print("\n【损失权重】")
+    print("\n[Loss weight] ")
     for key, value in LOSS_WEIGHTS.items():
         print(f"  {key}: {value}")
 

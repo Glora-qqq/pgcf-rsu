@@ -1,4 +1,4 @@
-"""路侧天线在世界坐标系中的位置。"""
+"""The position of the roadside antenna in the world coordinate system. """
 
 import numpy as np
 from .coordinates import rsf_to_world
@@ -98,7 +98,7 @@ def get_rsf_extrinsic_and_antenna_features(
 
 if __name__ == '__main__':
     print("="*80)
-    print("测试RSF外参和天线位置转换")
+    print("TestRSFExternal parameter and antenna position conversion")
     print("="*80)
 
     rsf_dict = {
@@ -107,65 +107,65 @@ if __name__ == '__main__':
         "RSF7": {"X": 68.3, "Y": -32.6, "Z": -5.5, "Roll": 0, "Pitch": 0, "Yaw": 65},
     }
 
-    print("第1步：RSF外参角度转换（度→弧度）")
+    print("Page1Step: RSFExternal reference angle conversion (degrees→Radian) ")
     print("-" * 50)
 
     for rsf_name, rsf_data in rsf_dict.items():
         print(f"\n{rsf_name}:")
-        print(f"  原始数据（JSON）: {rsf_data}")
+        print(f"  Raw Data (JSON) : {rsf_data}")
 
         rsf_extrinsic = convert_rsf_extrinsic_to_radians(rsf_data)
-        print(f"  转换后外参[6]: {rsf_extrinsic}")
-        print(f"  姿态角度验证: {rsf_extrinsic[3:] * 180/np.pi}°")
+        print(f"  External parameters after conversion[6]: {rsf_extrinsic}")
+        print(f"  Pose Angle Validation: {rsf_extrinsic[3:] * 180/np.pi}°")
 
     print("\n" + "="*80)
-    print("第2步：批量转换测试")
+    print("Page2Step: Batch Conversion Testing")
     print("-" * 50)
 
     rsf_numpy_dict = convert_rsf_extrinsic_batch(rsf_dict)
 
     for rsf_name, rsf_extrinsic in rsf_numpy_dict.items():
-        print(f"\n{rsf_name} 外参[6]: {rsf_extrinsic}")
+        print(f"\n{rsf_name} External Ginseng[6]: {rsf_extrinsic}")
 
     print("\n" + "="*80)
-    print("第3步：天线位置计算（RSF坐标系→世界坐标系）")
+    print("Page3Step: Antenna position calculation (RSFCoordinate system→World Coordinate System) ")
     print("-" * 50)
 
     for rsf_name, rsf_extrinsic in rsf_numpy_dict.items():
         print(f"\n{rsf_name}:")
-        print(f"  RSF原点（世界坐标）: {rsf_extrinsic[:3]}")
+        print(f"  RSFOrigin (World coordinates) : {rsf_extrinsic[:3]}")
 
         antenna_world = get_rsf_antenna_world_position(rsf_extrinsic, 'Scene1')
-        print(f"  天线位置（RSF坐标系）: [0, 0, 0.5]")
-        print(f"  天线位置（世界坐标系）: {antenna_world}")
-        print(f"  高度变化: {antenna_world[2] - rsf_extrinsic[2]:.3f}m")
+        print(f"  Antenna position (RSFCoordinate system) : [0, 0, 0.5]")
+        print(f"  Antenna position (World Coordinate System) : {antenna_world}")
+        print(f"  Height change: {antenna_world[2] - rsf_extrinsic[2]:.3f}m")
 
     print("\n" + "="*80)
-    print("第4步：完整特征生成")
+    print("Page4Step: Full feature generation")
     print("-" * 50)
 
     rsf1_extrinsic = rsf_numpy_dict['RSF1']
     features = get_rsf_extrinsic_and_antenna_features(rsf1_extrinsic, 'Scene1')
 
-    print(f"\nRSF1特征字典:")
+    print(f"\nRSF1Feature Dictionary:")
     print(f"  rsf_origin[6]: {features['rsf_origin']}")
     print(f"  antenna_position[3]: {features['antenna_position']}")
     print(f"  full_extrinsic[9]: {features['full_extrinsic']}")
 
     print("\n" + "="*80)
-    print("第5步：完整转换流程总结")
+    print("Page5Step: Full Conversion Process Summary")
     print("-" * 50)
 
-    print("\n转换流程：")
-    print("1. JSON读取: {'X': 190.0, 'Y': -69.7, 'Z': -5.5, 'Yaw': 155°}")
-    print("2. 角度转换: [190.0, -69.7, -5.5, 0, 0, 2.705rad]")
-    print("3. 天线计算: RSF原点 + R(roll,pitch,yaw) @ [0,0,0.5]")
-    print("4. 特征输出: 可选择RSF原点[6]、天线位置[3]或完整特征[9]")
+    print("\nConversion process: ")
+    print("1. JSONRead: {'X': 190.0, 'Y': -69.7, 'Z': -5.5, 'Yaw': 155°}")
+    print("2. Angle Conversion: [190.0, -69.7, -5.5, 0, 0, 2.705rad]")
+    print("3. Antenna calculation: RSFOrigin + R(roll,pitch,yaw) @ [0,0,0.5]")
+    print("4. Feature Output: SelectableRSFOrigin[6], Antenna position[3]or complete features[9]")
 
-    print("\n与rsu.py的对比:")
-    print("✅ rsu.py: 包含角度转换功能")
-    print("✅ antenna.py: 现在也包含角度转换 + 天线位置计算")
-    print("✅ 功能一致性: 两个模块都正确处理角度转换")
+    print("\nAndrsu.pyContrast:")
+    print("✅ rsu.py: Angle conversion included")
+    print("✅ antenna.py: Angle conversion is now also included + Antenna position calculation")
+    print("✅ Functional consistency: Both modules handle angle conversion correctly")
 
     print("="*80)
-    print("✅ RSF完整转换流程测试通过！")
+    print("✅ RSFComplete conversion process test passed! ")

@@ -1,4 +1,4 @@
-"""加载 DINOv2，把 RGB 图像序列编成 1024 维特征。"""
+"""Load DINOv2, Put the RGB Image Sequencing 1024 Dimension Features. """
 
 import os
 import sys
@@ -14,8 +14,8 @@ try:
     from dinov2.models import vision_transformer as vits
     from dinov2.hub.backbones import dinov2_vitl14_reg, dinov2_vitl14, dinov2_vitb14
 except ImportError as e:
-    print(f"❌ 无法导入DINOv2: {e}")
-    print("请设置 DINOV2_ROOT，或将官方仓库克隆到 third_party/dinov2")
+    print(f"❌ Unable to importDINOv2: {e}")
+    print("Please set DINOV2_ROOT, or clone the official repository to third_party/dinov2")
     raise
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,21 +42,21 @@ class DINOv2FeatureExtractor:
             'vitg14': 1536,
         }[model_type]
 
-        print(f"初始化DINOv2特征提取器")
-        print(f"  模型类型: {model_type}")
-        print(f"  特征维度: {self.feature_dim}")
-        print(f"  设备: {self.device}")
-        print(f"  批处理大小: {batch_size}")
+        print(f"InitializationDINOv2Feature Extractor")
+        print(f"  Model Type: {model_type}")
+        print(f"  Feature Dimensions: {self.feature_dim}")
+        print(f"  Equipment: {self.device}")
+        print(f"  Batch size: {batch_size}")
 
         self.model = self._load_model(weights_path)
         self.model.eval()
 
-        print(f"✅ DINOv2模型加载成功")
+        print(f"✅ DINOv2Model loaded successfully")
 
     def _load_model(self, weights_path):
 
         if self.model_type == 'vitl14_reg4':
-            print(f"加载权重: {weights_path}")
+            print(f"Loading weights: {weights_path}")
             model = dinov2_vitl14_reg(pretrained=False)
 
             if weights_path and os.path.exists(weights_path):
@@ -64,7 +64,7 @@ class DINOv2FeatureExtractor:
                 model.load_state_dict(state_dict, strict=False)
 
         elif self.model_type == 'vitl14':
-            print(f"加载权重: {weights_path}")
+            print(f"Loading weights: {weights_path}")
             model = dinov2_vitl14(pretrained=False)
 
             if weights_path and os.path.exists(weights_path):
@@ -72,14 +72,14 @@ class DINOv2FeatureExtractor:
                 model.load_state_dict(state_dict, strict=False)
 
         elif self.model_type == 'vitb14':
-            print(f"加载权重: {weights_path}")
+            print(f"Loading weights: {weights_path}")
             model = dinov2_vitb14(pretrained=False)
 
             if weights_path and os.path.exists(weights_path):
                 state_dict = torch.load(weights_path, map_location='cpu')
                 model.load_state_dict(state_dict, strict=False)
         else:
-            raise ValueError(f"不支持的模型类型: {self.model_type}")
+            raise ValueError(f"Unsupported model type: {self.model_type}")
 
         model = model.to(self.device)
         return model
@@ -108,7 +108,7 @@ class DINOv2FeatureExtractor:
 
         iterator = range(total_frames)
         if show_progress:
-            iterator = tqdm(iterator, desc=f"提取特征 {dataset.scene}_{dataset.rsf}_{dataset.view}")
+            iterator = tqdm(iterator, desc=f"Extract features {dataset.scene}_{dataset.rsf}_{dataset.view}")
 
         for i in iterator:
             image, frame_id, is_missing = dataset[i]
@@ -170,7 +170,7 @@ class DINOv2FeatureExtractor:
 def test_extractor():
 
     print("=" * 70)
-    print("测试DINOv2特征提取器")
+    print("TestDINOv2Feature Extractor")
     print("=" * 70)
 
     sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data'))
@@ -185,52 +185,52 @@ def test_extractor():
 
     samples = get_all_samples(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN)
     if len(samples) == 0:
-        print("❌ 没有找到样本")
+        print("❌ No samples found")
         return
 
     scene, rsf, view = samples[0]
-    print(f"\n测试样本: {scene}_{rsf}_{view}")
+    print(f"\nTest Sample: {scene}_{rsf}_{view}")
 
     dataset = RGBSequenceDataset(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN, scene, rsf, view)
 
-    print("\n开始提取特征...")
+    print("\nStart extracting features...")
     features, mask = extractor.extract_sequence(dataset, show_progress=True)
 
-    print(f"\n提取结果:")
-    print(f"  特征shape: {features.shape}")
-    print(f"  特征dtype: {features.dtype}")
-    print(f"  有效帧数: {(~mask).sum()}")
-    print(f"  缺失帧数: {mask.sum()}")
+    print(f"\nExtract Results:")
+    print(f"  Featuresshape: {features.shape}")
+    print(f"  Featuresdtype: {features.dtype}")
+    print(f"  Effective Frames: {(~mask).sum()}")
+    print(f"  Missing frames: {mask.sum()}")
 
     valid_feat = features[~mask]
     missing_feat = features[mask]
 
-    print(f"\n有效帧特征:")
-    print(f"  数量: {len(valid_feat)}")
-    print(f"  均值: {valid_feat.mean():.4f}")
-    print(f"  标准差: {valid_feat.std():.4f}")
-    print(f"  范围: [{valid_feat.min():.4f}, {valid_feat.max():.4f}]")
+    print(f"\nEffective Frame Characteristics:")
+    print(f"  Quantity: {len(valid_feat)}")
+    print(f"  Mean: {valid_feat.mean():.4f}")
+    print(f"  Standard deviation: {valid_feat.std():.4f}")
+    print(f"  Scope: [{valid_feat.min():.4f}, {valid_feat.max():.4f}]")
 
-    print(f"\n缺失帧特征:")
-    print(f"  数量: {len(missing_feat)}")
-    print(f"  是否全为零: {np.allclose(missing_feat, 0)}")
+    print(f"\nMissing frame characteristics:")
+    print(f"  Quantity: {len(missing_feat)}")
+    print(f"  Is all zero: {np.allclose(missing_feat, 0)}")
 
     output_path = os.path.join(ENV_FEATURE_DIR_TRAIN, scene, rsf, f"{scene}_{rsf}_{view}_features.npy")
-    print(f"\n保存特征到: {output_path}")
+    print(f"\nSave features to: {output_path}")
 
     info = extractor.extract_and_save(dataset, output_path, show_progress=False)
-    print(f"✅ 保存成功")
-    print(f"  文件大小: {info['file_size_mb']:.2f} MB")
+    print(f"✅ Saved successfully")
+    print(f"  File Size: {info['file_size_mb']:.2f} MB")
 
-    print(f"\n验证加载...")
+    print(f"\nVerify loading...")
     loaded_data = np.load(output_path, allow_pickle=True).item()
-    print(f"  特征shape: {loaded_data['features'].shape}")
-    print(f"  场景: {loaded_data['scene']}")
+    print(f"  Featuresshape: {loaded_data['features'].shape}")
+    print(f"  Scenario: {loaded_data['scene']}")
     print(f"  RSF: {loaded_data['rsf']}")
-    print(f"  视角: {loaded_data['view']}")
-    print(f"  有效帧: {loaded_data['valid_frames']}")
+    print(f"  Angle of View: {loaded_data['view']}")
+    print(f"  Valid Frames: {loaded_data['valid_frames']}")
 
-    print("\n✅ 测试完成！")
+    print("\n✅ Test Complete! ")
 
 if __name__ == '__main__':
     test_extractor()

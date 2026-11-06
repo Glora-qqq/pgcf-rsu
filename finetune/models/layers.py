@@ -1,4 +1,4 @@
-"""WiFo 使用的 Transformer 块。"""
+"""WiFo Used Transformer Block. """
 
 import torch
 import torch.nn as nn

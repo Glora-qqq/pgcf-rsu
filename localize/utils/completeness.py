@@ -1,4 +1,4 @@
-"""按 CSI 缺失表把无效帧的特征置零。"""
+"""By CSI Missing table zeroes the features of invalid frames. """
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def default_completeness_path() -> Path:
     if _DEFAULT_TXT.is_file():
         return _DEFAULT_TXT
     raise FileNotFoundError(
-        f"找不到 CSI 完备性文件:\n  {_DEFAULT_JSON}\n  {_DEFAULT_TXT}"
+        f"Not found CSI Completeness documents:\n  {_DEFAULT_JSON}\n  {_DEFAULT_TXT}"
     )
 
 def _ranges_to_set(ranges: Iterable) -> Set[int]:

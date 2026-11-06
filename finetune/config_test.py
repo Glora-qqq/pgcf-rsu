@@ -1,4 +1,4 @@
-"""测试集上导出 CSI 与视觉融合特征时的路径和场景。"""
+"""Export on Test Set CSI Paths and scenarios when blending features with vision. """
 
 import os
 import platform
@@ -98,7 +98,7 @@ DEBUG_CONFIG = {
 def verify_paths():
 
     print("=" * 60)
-    print("测试配置路径验证")
+    print("Test Configuration Path Validation")
     print("=" * 60)
 
     paths = {
@@ -118,9 +118,9 @@ def verify_paths():
 
     print("=" * 60)
     if all_exist:
-        print("✓ 所有路径都存在")
+        print("✓ All paths exist")
     else:
-        print("✗ 部分路径不存在，请检查")
+        print("✗ Some paths do not exist, Please check")
     print("=" * 60)
 
     return all_exist
@@ -128,11 +128,11 @@ def verify_paths():
 if __name__ == '__main__':
     verify_paths()
 
-    print("\n测试配置:")
-    print(f"  CSI帧数: {TEST_CSI_CONFIG['num_frames_original']} → {TEST_CSI_CONFIG['num_frames_padded']}")
-    print(f"  RGB帧数: {TEST_RGB_CONFIG['num_frames_original']} → {TEST_RGB_CONFIG['num_frames_padded']}")
-    print(f"  窗口大小: {TEST_WINDOW_CONFIG['window_size']}")
-    print(f"  步长: {TEST_WINDOW_CONFIG['stride']}")
-    print(f"  最少有效帧: {TEST_WINDOW_CONFIG['min_valid_frames']}")
+    print("\nTest Configuration:")
+    print(f"  CSIFrames: {TEST_CSI_CONFIG['num_frames_original']} → {TEST_CSI_CONFIG['num_frames_padded']}")
+    print(f"  RGBFrames: {TEST_RGB_CONFIG['num_frames_original']} → {TEST_RGB_CONFIG['num_frames_padded']}")
+    print(f"  Window size: {TEST_WINDOW_CONFIG['window_size']}")
+    print(f"  Step: {TEST_WINDOW_CONFIG['stride']}")
+    print(f"  Minimum valid frames: {TEST_WINDOW_CONFIG['min_valid_frames']}")
     print(f"  Batch size: {TEST_CONFIG['batch_size']}")
     print(f"  WiFo mask ratio: {TEST_CONFIG['mask_ratio']}")

@@ -1,4 +1,4 @@
-"""渐进门控：把 1024 维视觉特征注入 WiFo 解码器。"""
+"""Progressive gating: Put the 1024 Dimension Visual Feature Injection WiFo Decoder. """
 
 import torch
 import torch.nn as nn
@@ -120,7 +120,7 @@ class GatedWiFo(nn.Module):
         nn.init.constant_(last_layer.weight, 0)
         if last_layer.bias is not None:
             nn.init.constant_(last_layer.bias, 0)
-        print("✅ RGB投影层最后一层已零初始化（渐进式融合）")
+        print("✅ RGBThe last layer of the projection layer has zero initialization (Progressive Convergence) ")
 
     def patchify(self, imgs):
 

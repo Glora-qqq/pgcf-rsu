@@ -1,4 +1,4 @@
-"""加载微调权重，按车辆和路侧单元导出 512 维特征。"""
+"""Load Spinner Weight, Export by Vehicle and Roadside Unit 512 Dimension Features. """
 
 import torch
 import torch.nn as nn
@@ -40,11 +40,11 @@ class FeatureExtractor:
         self.device = device
 
         print(f"\n{'='*70}")
-        print("加载模型...")
+        print("Load Model...")
         print(f"{'='*70}")
         self.model = self._load_model()
         self.model.eval()
-        print(f"✓ 模型加载成功！")
+        print(f"✓ Model loaded successfully! ")
 
         self.output_root = FEATURES_OUTPUT_ROOT
         self.output_root.mkdir(parents=True, exist_ok=True)
@@ -74,7 +74,7 @@ class FeatureExtractor:
         )
 
         if not self.checkpoint_path.exists():
-            raise FileNotFoundError(f"检查点不存在: {self.checkpoint_path}")
+            raise FileNotFoundError(f"Checkpoint does not exist: {self.checkpoint_path}")
 
         checkpoint = torch.load(self.checkpoint_path, map_location='cpu')
 
@@ -97,9 +97,9 @@ class FeatureExtractor:
         is_test: bool = False
     ):
 
-        data_type = "测试集" if is_test else "训练集"
+        data_type = "Test set" if is_test else "Training Sets"
         print(f"\n{'='*70}")
-        print(f"提取 {data_type} {scene} 特征")
+        print(f"Extract {data_type} {scene} Features")
         print(f"{'='*70}")
 
         data_root = TEST_DATA_ROOT if is_test else TRAIN_DATA_ROOT
@@ -107,15 +107,15 @@ class FeatureExtractor:
         rgb_root = TEST_RGB_ROOT if is_test else TRAIN_RGB_ROOT
 
         for rsf in rsf_list:
-            print(f"\n[{scene}/{rsf}] 开始提取...")
+            print(f"\n[{scene}/{rsf}] Start fetching...")
 
             vehicles = self._get_vehicles_for_rsf(scene, rsf, data_root, is_test)
 
             if not vehicles:
-                print(f"[WARNING] {scene}/{rsf} 无可用车辆")
+                print(f"[WARNING] {scene}/{rsf} No vehicles available")
                 continue
 
-            print(f"  找到 {len(vehicles)} 个车辆: {', '.join(vehicles)}")
+            print(f"  Found {len(vehicles)} vehicles: {', '.join(vehicles)}")
 
             for vehicle in vehicles:
                 try:
@@ -131,7 +131,7 @@ class FeatureExtractor:
                     self.extraction_stats['success_count'] += 1
 
                 except Exception as e:
-                    print(f"[ERROR] {scene}/{rsf}/{vehicle} 提取失败: {e}")
+                    print(f"[ERROR] {scene}/{rsf}/{vehicle} Extraction failed: {e}")
                     self.extraction_stats['failed_vehicles'].append(
                         f"{scene}/{rsf}/{vehicle}"
                     )
@@ -149,7 +149,7 @@ class FeatureExtractor:
 
         self.extraction_stats['total_vehicles'] += 1
 
-        print(f"\n  [{vehicle}] 开始提取特征...")
+        print(f"\n  [{vehicle}] Start extracting features...")
 
         load_scene_for_mask = SCENE_NAME_MAPPING.get(scene, scene.replace('_', '')) if is_test else scene
 
@@ -165,16 +165,16 @@ class FeatureExtractor:
             is_test=is_test
         )
 
-        print(f"    GPS范围: 帧{gps_info['start_frame']}-{gps_info['end_frame']} (共{gps_info['total_frames']}帧)")
+        print(f"    GPSScope: Frame{gps_info['start_frame']}-{gps_info['end_frame']} (of{gps_info['total_frames']}Frame)")
 
         window_features_list, window_start_indices = self._extract_window_features(csi, mask, rgb_feature)
 
         if len(window_features_list) == 0:
-            print(f"    ⚠️  跳过: 没有高质量窗口")
+            print(f"    ⚠️  Skip: No high quality windows")
             self.extraction_stats['failed_vehicles'].append(f"{scene}/{rsf}/{vehicle}")
             return
 
-        print(f"    聚合 {len(window_features_list)} 个窗口特征...")
+        print(f"    Aggregation {len(window_features_list)} window features...")
         window_size = WINDOW_CONFIG['window_size']
 
         features_full = aggregate_window_features_to_frames(
@@ -185,7 +185,7 @@ class FeatureExtractor:
             feature_dim=EXTRACT_CONFIG['feature_dim']
         )
 
-        print(f"    完整特征: {features_full.shape}")
+        print(f"    Complete features: {features_full.shape}")
 
         if EXTRACT_CONFIG['use_gps_alignment']:
             features_vehicle = crop_features_by_gps(
@@ -193,7 +193,7 @@ class FeatureExtractor:
                 gps_info=gps_info,
                 verify=EXTRACT_CONFIG['verify_alignment']
             )
-            print(f"    GPS截取后: {features_vehicle.shape}")
+            print(f"    GPSAfter Interception: {features_vehicle.shape}")
         else:
             features_vehicle = features_full
 
@@ -216,7 +216,7 @@ class FeatureExtractor:
 
         self.extraction_stats['feature_shapes'][f"{scene}/{rsf}/{vehicle}"] = features_vehicle.shape
 
-        print(f"    ✓ 特征已保存: {output_file.name}")
+        print(f"    ✓ Feature saved: {output_file.name}")
 
     def _load_vehicle_data(
         self,
@@ -268,10 +268,10 @@ class FeatureExtractor:
             if num_valid >= min_valid_frames:
                 valid_windows.append((start_idx, end_idx, num_valid))
 
-        print(f"    总窗口: {total_windows}, 高质量窗口: {len(valid_windows)} (有效帧>={min_valid_frames})")
+        print(f"    Total Window: {total_windows}, High Quality Window: {len(valid_windows)} (Valid Frames>={min_valid_frames})")
 
         if len(valid_windows) == 0:
-            print(f"    ⚠️  警告: 没有高质量窗口！")
+            print(f"    ⚠️  Warning: No high quality windows! ")
             return [], []
 
         window_features_list = []
@@ -385,19 +385,19 @@ class FeatureExtractor:
         with open(summary_file, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
 
-        print(f"\n✓ 提取摘要已保存: {summary_file}")
+        print(f"\n✓ Extraction summary saved: {summary_file}")
 
 def main():
 
     print("=" * 70)
-    print("PGCF-RSU 特征导出")
+    print("PGCF-RSU Feature Export")
     print("=" * 70)
 
     print_config_summary()
 
-    print("\n验证配置...")
+    print("\nValidate Configuration...")
     if not verify_config():
-        print("\n⚠️  配置验证失败，请检查路径配置！")
+        print("\n⚠️  Configuration validation failed, Please check the path configuration! ")
         return
 
     try:
@@ -407,12 +407,12 @@ def main():
             device=EXTRACT_CONFIG['device']
         )
     except Exception as e:
-        print(f"\n[ERROR] 初始化失败: {e}")
+        print(f"\n[ERROR] Initialization failed: {e}")
         return
 
     print("\n" + "="*70)
-    print("开始提取训练集特征")
-    print(f"min_valid_frames: {WINDOW_CONFIG['min_valid_frames']} 帧")
+    print("Start extracting training set features")
+    print(f"min_valid_frames: {WINDOW_CONFIG['min_valid_frames']} Frame")
     print("="*70)
 
     for scene in TRAIN_SCENES:
@@ -424,8 +424,8 @@ def main():
         )
 
     print("\n" + "="*70)
-    print("开始提取测试集特征")
-    print(f"min_valid_frames: {WINDOW_CONFIG['min_valid_frames']} 帧")
+    print("Start extracting test set features")
+    print(f"min_valid_frames: {WINDOW_CONFIG['min_valid_frames']} Frame")
     print("="*70)
 
     for scene in TEST_SCENES:
@@ -439,15 +439,15 @@ def main():
     extractor.save_extraction_summary()
 
     print("\n" + "="*70)
-    print("特征提取完成！")
+    print("Feature extraction complete! ")
     print("="*70)
-    print(f"\n统计信息：")
-    print(f"  总车辆数: {extractor.extraction_stats['total_vehicles']}")
-    print(f"  成功: {extractor.extraction_stats['success_count']}")
-    print(f"  失败: {len(extractor.extraction_stats['failed_vehicles'])}")
+    print(f"\nStatistics: ")
+    print(f"  Total vehicles: {extractor.extraction_stats['total_vehicles']}")
+    print(f"  Success: {extractor.extraction_stats['success_count']}")
+    print(f"  Failed: {len(extractor.extraction_stats['failed_vehicles'])}")
 
     if extractor.extraction_stats['failed_vehicles']:
-        print(f"\n失败列表：")
+        print(f"\nFailure List: ")
         for v in extractor.extraction_stats['failed_vehicles']:
             print(f"  - {v}")
 

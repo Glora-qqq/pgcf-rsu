@@ -1,4 +1,4 @@
-"""多路侧单元定位训练的路径、场景和模型配置。"""
+"""Multi-side unit positioning training path, Scenario and Model Configuration. """
 
 import os
 from pathlib import Path
@@ -278,46 +278,46 @@ class TrainConfig:
     def print_config(self):
 
         print("=" * 80)
-        print("PGCF-RSU 定位训练配置")
+        print("PGCF-RSU Locate Training Configuration")
         print("=" * 80)
 
-        print(f"\n[场景配置]")
+        print(f"\n[Scenario Configuration]")
         for scene in self.scenes:
             print(f"  {scene}: {self.rsf_configs[scene]} ({self.num_rsfs[scene]} RSFs)")
 
-        print(f"\n[数据加载]")
-        print(f"  模式: {self.mode}")
-        print(f"  时间窗口: {self.time_window}")
-        print(f"  Batch大小: {self.batch_size}")
-        print(f"  WiFo特征根: {WIFO_FEATURES_ROOT}")
+        print(f"\n[Data loading]")
+        print(f"  Mode: {self.mode}")
+        print(f"  Time window: {self.time_window}")
+        print(f"  BatchSize: {self.batch_size}")
+        print(f"  WiFoFeature Root: {WIFO_FEATURES_ROOT}")
 
-        print(f"\n[模型架构]")
-        print(f"  WiFo特征: {self.wifo_dim}D")
-        print(f"  空间特征: {self.spatial_dim}D")
-        print(f"  多RSF融合模式: {self.multi_rsf_fusion_mode}")
-        print(f"  RSF融合类型: {self.rsf_fusion_type}")
-        print(f"  融合输出维度: {self.fusion_output_dim}D")
-        print(f"  时序建模: {self.temporal_type} ({self.temporal_num_layers}层)")
-        print(f"  位置回归: {self.position_mode}")
-        print(f"  CSI融合策略: {self.csi_fusion_strategy}")
+        print(f"\n[Model Architecture]")
+        print(f"  WiFoFeatures: {self.wifo_dim}D")
+        print(f"  Spatial characteristics: {self.spatial_dim}D")
+        print(f"  MultipleRSFFusion Mode: {self.multi_rsf_fusion_mode}")
+        print(f"  RSFFusion Type: {self.rsf_fusion_type}")
+        print(f"  Fusion Output Dimension: {self.fusion_output_dim}D")
+        print(f"  Temporal modeling: {self.temporal_type} ({self.temporal_num_layers}Layer)")
+        print(f"  Position Regression: {self.position_mode}")
+        print(f"  CSIConvergence Strategy: {self.csi_fusion_strategy}")
         if str(self.csi_fusion_strategy).lower() == "concat_proj":
             print(f"  ConcatProj: n_rsu_max={self.n_rsu_max}, hidden={self.concat_proj_hidden}")
 
-        print(f"\n[训练参数]")
+        print(f"\n[Training parameters]")
         print(f"  Epochs: {self.num_epochs}")
-        print(f"  学习率: {self.learning_rate}")
-        print(f"  优化器: {self.optimizer}")
-        print(f"  设备: {self.device}")
-        print(f"  损失权重 α/ω/β/γ/δ: "
+        print(f"  Learning Rate: {self.learning_rate}")
+        print(f"  Optimizer: {self.optimizer}")
+        print(f"  Equipment: {self.device}")
+        print(f"  Loss weight α/ω/β/γ/δ: "
               f"{self.loss_alpha}/{self.loss_omega}/{self.loss_beta}/"
               f"{self.loss_gamma}/{self.loss_delta}")
         if self.spatial_feature_mask:
-            print(f"  空间特征掩码维度: {self.spatial_feature_mask}")
-        print(f"  消融模态 ablation_modality: {self.ablation_modality}")
+            print(f"  Spatial Feature Mask Dimension: {self.spatial_feature_mask}")
+        print(f"  Ablation Mode ablation_modality: {self.ablation_modality}")
         if self.ablation_modality == 'gps_geo':
             print(f"  geo_proj_hidden: {self.geo_proj_hidden}")
         if self.ablation_modality in ('no_csi_completion', 'no_completion'):
-            print(f"  CSI完备性表: {self.completeness_json or '(default data_analysis)'}")
+            print(f"  CSICompleteness Table: {self.completeness_json or '(default data_analysis)'}")
 
         print("=" * 80)
 
@@ -325,14 +325,14 @@ def create_output_dirs():
 
     CHECKPOINT_ROOT.mkdir(parents=True, exist_ok=True)
     LOG_ROOT.mkdir(parents=True, exist_ok=True)
-    print("[INFO] 输出目录已创建")
+    print("[INFO] Output directory created")
 
 if __name__ == '__main__':
-    print("\nPGCF-RSU 定位配置")
+    print("\nPGCF-RSU Positioning Configuration")
 
     config = TrainConfig(scenes=['Scene1'])
     config.print_config()
 
     create_output_dirs()
 
-    print("\n[完成]")
+    print("\n[Done]")

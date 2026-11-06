@@ -1,4 +1,4 @@
-"""导出视觉骨干、补全网络和融合网络。"""
+"""Export Visual Backbone, Complementary and Converged Networks. """
 
 from .fusion import *
 

@@ -1,4 +1,4 @@
-"""补全模型推理时的图像、掩码和输出路径。"""
+"""Completing the Image for Model Reasoning, Mask and Output Path. """
 
 import os
 
@@ -70,35 +70,35 @@ def validate_config():
     errors = []
 
     if not os.path.exists(DINOV2_WEIGHTS_PATH):
-        errors.append(f"DINOv2权重不存在: {DINOV2_WEIGHTS_PATH}")
+        errors.append(f"DINOv2Weight does not exist: {DINOV2_WEIGHTS_PATH}")
 
     if not os.path.exists(TRANSFORMER_MODEL_PATH):
-        errors.append(f"Transformer模型不存在: {TRANSFORMER_MODEL_PATH}")
+        errors.append(f"TransformerModel does not exist: {TRANSFORMER_MODEL_PATH}")
 
     if not os.path.exists(TRAIN_CONFIG['images_dir']):
-        errors.append(f"训练集图像目录不存在: {TRAIN_CONFIG['images_dir']}")
+        errors.append(f"Training set image directory does not exist: {TRAIN_CONFIG['images_dir']}")
     if not os.path.exists(TRAIN_CONFIG['mask_dir']):
-        errors.append(f"训练集mask目录不存在: {TRAIN_CONFIG['mask_dir']}")
+        errors.append(f"Training SetsmaskDirectory does not exist: {TRAIN_CONFIG['mask_dir']}")
 
     if not os.path.exists(TEST_CONFIG['images_dir']):
-        errors.append(f"测试集图像目录不存在: {TEST_CONFIG['images_dir']}")
+        errors.append(f"Test set image directory does not exist: {TEST_CONFIG['images_dir']}")
     if not os.path.exists(TEST_CONFIG['mask_dir']):
-        errors.append(f"测试集mask目录不存在: {TEST_CONFIG['mask_dir']}")
+        errors.append(f"Test setmaskDirectory does not exist: {TEST_CONFIG['mask_dir']}")
 
     import torch
     if not torch.cuda.is_available():
-        errors.append("CUDA不可用")
+        errors.append("CUDANot available")
     else:
         available_gpus = torch.cuda.device_count()
-        print(f"  可用GPU数量: {available_gpus}")
+        print(f"  AvailableGPUQuantity: {available_gpus}")
 
     if errors:
-        print("❌ 配置验证失败:")
+        print("❌ Configuration validation failed:")
         for error in errors:
             print(f"  - {error}")
         return False
 
-    print("✅ 配置验证通过")
+    print("✅ Configuration validation passed")
     return True
 
 if __name__ == "__main__":

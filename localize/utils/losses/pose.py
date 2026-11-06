@@ -1,4 +1,4 @@
-"""位置、姿态和修正系数的联合损失。"""
+"""Location, Combined Loss of Posture and Correction Factor. """
 
 import torch
 import torch.nn as nn
@@ -37,7 +37,7 @@ class MultiLevel6DPoseLoss(nn.Module):
         elif self.position_loss_type == 'huber':
             loss = F.smooth_l1_loss(pred_positions, gt_positions)
         else:
-            raise ValueError(f"未知的位置损失类型: {self.position_loss_type}")
+            raise ValueError(f"Unknown location loss type: {self.position_loss_type}")
 
         loss_x = F.mse_loss(pred_positions[..., 0], gt_positions[..., 0])
         loss_y = F.mse_loss(pred_positions[..., 1], gt_positions[..., 1])
@@ -257,7 +257,7 @@ class MultiLevel6DPoseLoss(nn.Module):
         return avg_total_loss, loss_dict
 
 if __name__ == "__main__":
-    print("测试6D损失函数...")
+    print("Test6DLoss function...")
 
     loss_fn = MultiLevel6DPoseLoss(
         alpha=1.0,
@@ -285,10 +285,10 @@ if __name__ == "__main__":
         correction_delta, confidence, actual_lengths
     )
 
-    print(f"✓ 6D损失计算成功: {loss.item():.6f}")
+    print(f"✓ 6DLoss calculated successfully: {loss.item():.6f}")
 
     loss.backward()
-    print(f"✓ 梯度计算成功")
+    print(f"✓ Gradient calculated successfully")
 
     position_loss = loss_fn.compute_position_loss(
         pred_poses[..., :3], gt_poses[..., :3]
@@ -297,9 +297,9 @@ if __name__ == "__main__":
         pred_poses[..., 3:], gt_poses[..., 3:]
     )
 
-    print(f"\n损失分解:")
-    print(f"  位置损失: {position_loss.item():.6f}")
-    print(f"  方向损失: {orientation_loss.item():.6f}")
-    print(f"  总损失: {loss.item():.6f}")
+    print(f"\nLoss decomposition:")
+    print(f"  Loss of position: {position_loss.item():.6f}")
+    print(f"  Direction Loss: {orientation_loss.item():.6f}")
+    print(f"  Total Losses: {loss.item():.6f}")
 
-    print("\n✓ 所有测试通过！")
+    print("\n✓ All tests passed! ")

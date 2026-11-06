@@ -1,4 +1,4 @@
-"""场景、车辆、路侧单元和坐标系常量。"""
+"""Scenario, Vehicle, Roadside Units and Coordinate System Constants. """
 
 import numpy as np
 
@@ -17,9 +17,9 @@ SCENE_VEHICLES = {
 }
 
 SCENE_DESCRIPTIONS = {
-    'Scene1': '分叉路口高车流量密度场景',
-    'Scene2': '超宽车道低车流量密度场景',
-    'Scene3': '低空经济场景',
+    'Scene1': 'High traffic density scenarios at fork intersections',
+    'Scene2': 'Ultra-wide lane low traffic density scenario',
+    'Scene3': 'Low-altitude economic scenarios',
 }
 
 VEHICLE_HEIGHT_CORRECTION = {
@@ -53,7 +53,7 @@ def get_vehicle_height_correction(scene_name, vehicle_name):
 
     key = (scene_name, vehicle_name)
     if key not in VEHICLE_HEIGHT_CORRECTION:
-        print(f"[WARNING] 未找到车辆高度修正值: {scene_name}/{vehicle_name}，使用0.0")
+        print(f"[WARNING] Vehicle height correction not found: {scene_name}/{vehicle_name}, Use0.0")
         return 0.0
     return VEHICLE_HEIGHT_CORRECTION[key]
 
@@ -130,7 +130,7 @@ CAMERA_INTRINSIC = compute_camera_intrinsic()
 def print_camera_intrinsic():
 
     print("="*60)
-    print("相机内参矩阵 K:")
+    print("Camera In-Parameter Matrix K:")
     print("="*60)
     print(CAMERA_INTRINSIC)
     print(f"\nfx = fy = {CAMERA_INTRINSIC[0, 0]:.2f}")

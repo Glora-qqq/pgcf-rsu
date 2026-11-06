@@ -1,4 +1,4 @@
-"""导出帧级特征聚合函数。"""
+"""Export Frame-Level Feature Aggregation Functions. """
 
 from .aggregate import (
     patch_to_frame_features,

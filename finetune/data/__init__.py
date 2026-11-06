@@ -1,4 +1,4 @@
-"""导出滑窗数据集和测试集读取接口。"""
+"""Export Sliding Window Dataset and Test Set Reading Interface. """
 
 from .windows import SlidingWindowCSIDataset
 

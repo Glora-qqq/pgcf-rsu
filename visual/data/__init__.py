@@ -1,4 +1,4 @@
-"""导出视觉阶段的数据集接口。"""
+"""Dataset Interface for Export Visual Stage. """
 
 from .sequences import RGBSequenceDataset, create_sample_info
 

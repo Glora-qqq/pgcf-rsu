@@ -1,4 +1,4 @@
-"""读取测试集 CSI 有效帧掩码。"""
+"""Read test set CSI Effective Frame Mask. """
 
 import numpy as np
 from pathlib import Path
@@ -33,7 +33,7 @@ def load_test_mask(
             elif len(mask) == num_frames_padded:
                 mask_extended = mask.copy()
             else:
-                print(f"[WARNING] Mask长度异常: {len(mask)}, 使用默认mask")
+                print(f"[WARNING] MaskAbnormal length: {len(mask)}, Use defaultmask")
                 mask_extended = np.zeros(num_frames_padded, dtype=np.float32)
 
             mask_extended[force_mask_start:] = 1.0
@@ -41,7 +41,7 @@ def load_test_mask(
             return mask_extended
 
         except Exception as e:
-            print(f"[WARNING] Mask加载失败 {mask_file}: {e}, 使用默认mask")
+            print(f"[WARNING] MaskLoading failed {mask_file}: {e}, Use defaultmask")
 
     mask = np.zeros(num_frames_padded, dtype=np.float32)
     mask[force_mask_start:] = 1.0
@@ -53,7 +53,7 @@ def verify_test_mask_loading():
     from config_test import TEST_MASK_ROOT
 
     print("=" * 60)
-    print("验证测试Mask加载")
+    print("Validation testMaskLoad")
     print("=" * 60)
 
     test_scene = 'Scene1'
@@ -67,16 +67,16 @@ def verify_test_mask_loading():
         vehicle=test_vehicle,
     )
 
-    print(f"✓ Mask加载完成")
-    print(f"  形状: {mask.shape}")
-    print(f"  数据类型: {mask.dtype}")
-    print(f"  前750帧:")
-    print(f"    有效帧数: {np.sum(mask[:750] == 0)}")
-    print(f"    缺失帧数: {np.sum(mask[:750] == 1)}")
-    print(f"  后750帧:")
-    print(f"    有效帧数: {np.sum(mask[750:] == 0)}")
-    print(f"    缺失帧数: {np.sum(mask[750:] == 1)}")
-    print(f"  后750帧全1检查: {np.all(mask[750:] == 1)}")
+    print(f"✓ MaskLoading complete")
+    print(f"  Shape: {mask.shape}")
+    print(f"  Data Type: {mask.dtype}")
+    print(f"  ago750Frame:")
+    print(f"    Effective Frames: {np.sum(mask[:750] == 0)}")
+    print(f"    Missing frames: {np.sum(mask[:750] == 1)}")
+    print(f"  After750Frame:")
+    print(f"    Effective Frames: {np.sum(mask[750:] == 0)}")
+    print(f"    Missing frames: {np.sum(mask[750:] == 1)}")
+    print(f"  After750Frame Full1Check: {np.all(mask[750:] == 1)}")
 
     print("=" * 60)
 

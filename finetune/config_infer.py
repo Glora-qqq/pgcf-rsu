@@ -1,4 +1,4 @@
-"""特征导出使用的数据、掩码、权重和输出路径。"""
+"""Data Used for Feature Export, Mask, Weight and Output Path. """
 
 import os
 from pathlib import Path
@@ -128,68 +128,68 @@ def verify_config():
     issues = []
 
     if not CHECKPOINT_PATH.exists():
-        issues.append(f"检查点不存在: {CHECKPOINT_PATH}")
+        issues.append(f"Checkpoint does not exist: {CHECKPOINT_PATH}")
 
     if not TRAIN_DATA_ROOT.exists():
-        issues.append(f"训练集数据不存在: {TRAIN_DATA_ROOT}")
+        issues.append(f"Training set data does not exist: {TRAIN_DATA_ROOT}")
 
     if not TEST_DATA_ROOT.exists():
-        issues.append(f"测试集数据不存在: {TEST_DATA_ROOT}")
+        issues.append(f"Test set data does not exist: {TEST_DATA_ROOT}")
 
     if not TRAIN_MASK_ROOT.exists():
-        issues.append(f"训练集Mask不存在: {TRAIN_MASK_ROOT}")
+        issues.append(f"Training SetsMaskAbsent: {TRAIN_MASK_ROOT}")
 
     if not TEST_MASK_ROOT.exists():
-        issues.append(f"测试集Mask不存在: {TEST_MASK_ROOT}")
+        issues.append(f"Test setMaskAbsent: {TEST_MASK_ROOT}")
 
     if not TRAIN_RGB_ROOT.exists():
-        issues.append(f"训练集RGB不存在: {TRAIN_RGB_ROOT}")
+        issues.append(f"Training SetsRGBAbsent: {TRAIN_RGB_ROOT}")
 
     if not TEST_RGB_ROOT.exists():
-        issues.append(f"测试集RGB不存在: {TEST_RGB_ROOT}")
+        issues.append(f"Test setRGBAbsent: {TEST_RGB_ROOT}")
 
     if issues:
-        print("⚠️  配置验证发现问题：")
+        print("⚠️  Configure validation to find issues: ")
         for issue in issues:
             print(f"  - {issue}")
         return False
     else:
-        print("✓ 配置验证通过！")
+        print("✓ Configuration validation passed! ")
         return True
 
 def print_config_summary():
 
     print("\n" + "=" * 70)
-    print("特征提取配置摘要")
+    print("Feature Extraction Configuration Summary")
     print("=" * 70)
 
-    print("\n【路径配置】")
-    print(f"  检查点: {CHECKPOINT_PATH}")
-    print(f"  输出目录: {FEATURES_OUTPUT_ROOT}")
+    print("\n[Path Configuration] ")
+    print(f"  Checkpoint: {CHECKPOINT_PATH}")
+    print(f"  Output directory: {FEATURES_OUTPUT_ROOT}")
 
-    print("\n【场景配置】")
-    print(f"  训练集场景: {', '.join(TRAIN_SCENES)}")
-    print(f"  测试集场景: {', '.join(TEST_SCENES)}")
+    print("\n[Scenario Configuration] ")
+    print(f"  Training Set Scenario: {', '.join(TRAIN_SCENES)}")
+    print(f"  Test Set Scenario: {', '.join(TEST_SCENES)}")
 
-    print("\n【模型配置】")
-    print(f"  CSI维度: [{CSI_CONFIG['num_frames']}, {CSI_CONFIG['height']}, {CSI_CONFIG['width']}]")
-    print(f"  特征维度: {EXTRACT_CONFIG['feature_dim']}")
-    print(f"  Mask比例: {MODEL_CONFIG['mask_ratio']} (特征提取不掩码)")
+    print("\n[Model Configuration] ")
+    print(f"  CSIDimension: [{CSI_CONFIG['num_frames']}, {CSI_CONFIG['height']}, {CSI_CONFIG['width']}]")
+    print(f"  Feature Dimensions: {EXTRACT_CONFIG['feature_dim']}")
+    print(f"  MaskRatio: {MODEL_CONFIG['mask_ratio']} (Feature extraction unmasked)")
 
-    print("\n【滑动窗口】")
-    print(f"  窗口大小: {WINDOW_CONFIG['window_size']}")
-    print(f"  滑动步长: {WINDOW_CONFIG['stride']}")
+    print("\n[Slide Window] ")
+    print(f"  Window size: {WINDOW_CONFIG['window_size']}")
+    print(f"  Slide Step Size: {WINDOW_CONFIG['stride']}")
 
-    print("\n【提取配置】")
-    print(f"  特征来源: {EXTRACT_CONFIG['feature_source']}")
+    print("\n[Extract Configuration] ")
+    print(f"  Feature Source: {EXTRACT_CONFIG['feature_source']}")
     if EXTRACT_CONFIG['feature_source'] == 'encoder':
-        print(f"    → 纯CSI特征（不受RGB gate影响）")
+        print(f"    → PureCSIFeatures (Not subject toRGB gateImpact) ")
     elif EXTRACT_CONFIG['feature_source'] == 'decoder_features':
-        print(f"    → Decoder Blocks输出（CSI+RGB融合的高层语义特征）")
-        print(f"    → 适合车辆定位等需要场景语义的任务")
-    print(f"  GPS对齐: {EXTRACT_CONFIG['use_gps_alignment']}")
-    print(f"  输出格式: {EXTRACT_CONFIG['save_format']}")
-    print(f"  设备: {EXTRACT_CONFIG['device']}")
+        print(f"    → Decoder BlocksOutput (CSI+RGBFused High-Level Semantic Features) ")
+        print(f"    → Suitable for tasks that require scene semantics such as vehicle positioning")
+    print(f"  GPSAlignment: {EXTRACT_CONFIG['use_gps_alignment']}")
+    print(f"  Output format: {EXTRACT_CONFIG['save_format']}")
+    print(f"  Equipment: {EXTRACT_CONFIG['device']}")
 
     print("\n" + "=" * 70)
 
@@ -198,13 +198,13 @@ if __name__ == '__main__':
     print("\n")
     verify_config()
 
-    print("\n【输出路径示例】")
+    print("\n[Sample Output Path] ")
     paths = get_output_paths()
     for key, path in paths.items():
         print(f"  {key}: {path}")
 
-    print("\n【特征文件路径示例】")
+    print("\n[Sample Feature File Path] ")
     train_file = get_feature_file_path('Scene1', 'RSF1', 'Car1', is_test=False)
     test_file = get_feature_file_path('Scene_1', 'RSF1', 'Car1', is_test=True)
-    print(f"  训练集: {train_file}")
-    print(f"  测试集: {test_file}")
+    print(f"  Training Sets: {train_file}")
+    print(f"  Test set: {test_file}")

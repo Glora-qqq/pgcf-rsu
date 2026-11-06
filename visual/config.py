@@ -1,4 +1,4 @@
-"""视觉补全阶段的数据路径、DINOv2 和 Transformer 配置。"""
+"""Visual Completion Stage Data Path, DINOv2 and Transformer Configuration. """
 
 import os
 
@@ -130,47 +130,47 @@ def get_all_samples(image_dir, mask_dir):
 def print_config():
 
     print("=" * 70)
-    print("环境特征提取配置")
+    print("Environment Feature Extraction Configuration")
     print("=" * 70)
 
-    print("\n📁 路径配置:")
-    print(f"  图像目录(训练): {IMAGE_DIR_TRAIN}")
-    print(f"  Mask目录(训练): {MASK_DIR_TRAIN}")
-    print(f"  环境特征目录(训练): {ENV_FEATURE_DIR_TRAIN}")
-    print(f"  DINOv2权重: {DINOV2_DEFAULT_WEIGHTS}")
-    print(f"  Transformer模型: {TRANSFORMER_BEST_MODEL}")
+    print("\n📁 Path Configuration:")
+    print(f"  Image Directory(Training): {IMAGE_DIR_TRAIN}")
+    print(f"  MaskContents(Training): {MASK_DIR_TRAIN}")
+    print(f"  Catalogue of Environmental Characteristics(Training): {ENV_FEATURE_DIR_TRAIN}")
+    print(f"  DINOv2Weight: {DINOV2_DEFAULT_WEIGHTS}")
+    print(f"  TransformerModel: {TRANSFORMER_BEST_MODEL}")
 
-    print("\n🎯 数据配置:")
-    print(f"  场景: {SCENES}")
-    print(f"  RSF配置:")
+    print("\n🎯 Data Configuration:")
+    print(f"  Scenario: {SCENES}")
+    print(f"  RSFConfiguration:")
     for scene, rsfs in SCENE_RSF_MAP.items():
-        print(f"    {scene}: {rsfs} ({len(rsfs)}个RSF)")
-    print(f"  视角: {VIEWS}")
-    print(f"  总帧数: {TOTAL_FRAMES}")
-    print(f"  理论样本数: {sum(len(rsfs) for rsfs in SCENE_RSF_MAP.values()) * len(VIEWS)}")
+        print(f"    {scene}: {rsfs} ({len(rsfs)}PieceRSF)")
+    print(f"  Angle of View: {VIEWS}")
+    print(f"  Total frames: {TOTAL_FRAMES}")
+    print(f"  Number of theoretical samples: {sum(len(rsfs) for rsfs in SCENE_RSF_MAP.values()) * len(VIEWS)}")
 
-    print("\n🤖 模型配置:")
-    print(f"  模型类型: {DINOV2_MODEL_TYPE}")
-    print(f"  特征维度: {FEATURE_DIM}")
-    print(f"  图像尺寸: {IMAGE_SIZE}x{IMAGE_SIZE}")
+    print("\n🤖 Model Configuration:")
+    print(f"  Model Type: {DINOV2_MODEL_TYPE}")
+    print(f"  Feature Dimensions: {FEATURE_DIM}")
+    print(f"  Image size: {IMAGE_SIZE}x{IMAGE_SIZE}")
 
-    print("\n⚙️ 运行配置:")
-    print(f"  GPU列表: {GPU_IDS}")
-    print(f"  多GPU并行: {'启用' if ENABLE_MULTI_GPU else '禁用'}")
-    print(f"  主设备: {DEVICE}")
-    print(f"  每GPU批处理大小: {BATCH_SIZE_PER_GPU}")
+    print("\n⚙️ Run Configuration:")
+    print(f"  GPUList: {GPU_IDS}")
+    print(f"  MultipleGPUParallel: {'Enable' if ENABLE_MULTI_GPU else 'Disable'}")
+    print(f"  Master Device: {DEVICE}")
+    print(f"  EveryGPUBatch size: {BATCH_SIZE_PER_GPU}")
 
-    print("\n🔄 Transformer补全配置:")
-    print(f"  模型维度: {TRANSFORMER_D_MODEL}")
-    print(f"  注意力头数: {TRANSFORMER_NHEAD}")
-    print(f"  层数: {TRANSFORMER_NUM_LAYERS}")
-    print(f"  序列长度: {MAX_SEQ_LENGTH}")
-    print(f"  批大小: {TRANSFORMER_BATCH_SIZE}")
-    print(f"  学习率: {TRANSFORMER_LEARNING_RATE}")
-    print(f"  训练轮数: {TRANSFORMER_EPOCHS}")
+    print("\n🔄 TransformerCompletion Configuration:")
+    print(f"  Model Dimensions: {TRANSFORMER_D_MODEL}")
+    print(f"  Attention Head Count: {TRANSFORMER_NHEAD}")
+    print(f"  Number of layers: {TRANSFORMER_NUM_LAYERS}")
+    print(f"  Sequence Length: {MAX_SEQ_LENGTH}")
+    print(f"  Batch size: {TRANSFORMER_BATCH_SIZE}")
+    print(f"  Learning Rate: {TRANSFORMER_LEARNING_RATE}")
+    print(f"  Number of training rounds: {TRANSFORMER_EPOCHS}")
 
     train_samples = get_all_samples(IMAGE_DIR_TRAIN, MASK_DIR_TRAIN)
-    print(f"\n📊 训练集样本数: {len(train_samples)}")
+    print(f"\n📊 Number of training set samples: {len(train_samples)}")
 
     print("=" * 70)
 

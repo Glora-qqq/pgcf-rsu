@@ -1,4 +1,4 @@
-"""测试集上的滑窗数据集。"""
+"""Sliding Window Dataset on Test Set. """
 
 import numpy as np
 import torch
@@ -38,9 +38,9 @@ class TestSlidingWindowDataset(Dataset):
         self.windows = []
         self._scan_samples(scenes, rsf_config, scene_name_mapping)
 
-        print(f"[TestDataset] 扫描完成:")
-        print(f"  场景数: {len(scenes)}")
-        print(f"  总窗口数: {len(self.windows)}")
+        print(f"[TestDataset] Scan Complete:")
+        print(f"  Number of scenes: {len(scenes)}")
+        print(f"  Total number of windows: {len(self.windows)}")
 
     def _scan_samples(
         self,
@@ -53,7 +53,7 @@ class TestSlidingWindowDataset(Dataset):
             train_scene = scene_name_mapping.get(test_scene, test_scene.replace('_', ''))
 
             if train_scene not in rsf_config:
-                print(f"[WARNING] Scene {train_scene} 不在RSF配置中，跳过")
+                print(f"[WARNING] Scene {train_scene} Not inRSFConfiguring, Skip")
                 continue
 
             rsf_list = rsf_config[train_scene]
@@ -173,7 +173,7 @@ class TestSlidingWindowDataset(Dataset):
                 else:
                     rgb_global = rgb_window.mean(axis=0)
             else:
-                raise ValueError(f"未知的RGB策略: {self.rgb_strategy}")
+                raise ValueError(f"UnknownRGBStrategy: {self.rgb_strategy}")
 
         sample = {
             'csi': torch.from_numpy(csi_window),
@@ -232,7 +232,7 @@ def verify_test_dataset():
     )
 
     print("=" * 60)
-    print("验证测试数据集")
+    print("Validate Test Dataset")
     print("=" * 60)
 
     dataset = TestSlidingWindowDataset(
@@ -245,20 +245,20 @@ def verify_test_dataset():
         **TEST_WINDOW_CONFIG
     )
 
-    print(f"\n[数据集统计]")
-    print(f"  总窗口数: {len(dataset)}")
+    print(f"\n[Dataset Statistics]")
+    print(f"  Total number of windows: {len(dataset)}")
 
     if len(dataset) > 0:
-        print(f"\n[测试第一个样本]")
+        print(f"\n[Test the first sample]")
         sample = dataset[0]
 
-        print(f"  CSI形状: {sample['csi'].shape}")
-        print(f"  Mask形状: {sample['mask'].shape}")
-        print(f"  RGB形状: {sample['rgb_global'].shape}")
-        print(f"  窗口信息: {sample['window_info']}")
-        print(f"  有效帧数: {(sample['mask'] == 0).sum().item()}")
+        print(f"  CSIShape: {sample['csi'].shape}")
+        print(f"  MaskShape: {sample['mask'].shape}")
+        print(f"  RGBShape: {sample['rgb_global'].shape}")
+        print(f"  Window Information: {sample['window_info']}")
+        print(f"  Effective Frames: {(sample['mask'] == 0).sum().item()}")
 
-        print(f"\n[测试DataLoader]")
+        print(f"\n[TestDataLoader]")
         dataloader = create_test_dataloader(
             data_root=TEST_DATA_ROOT,
             mask_root=TEST_MASK_ROOT,
@@ -272,10 +272,10 @@ def verify_test_dataset():
         )
 
         batch = next(iter(dataloader))
-        print(f"  Batch CSI形状: {batch['csi'].shape}")
-        print(f"  Batch Mask形状: {batch['mask'].shape}")
-        print(f"  Batch RGB形状: {batch['rgb_global'].shape}")
-        print(f"  ✓ DataLoader工作正常")
+        print(f"  Batch CSIShape: {batch['csi'].shape}")
+        print(f"  Batch MaskShape: {batch['mask'].shape}")
+        print(f"  Batch RGBShape: {batch['rgb_global'].shape}")
+        print(f"  ✓ DataLoaderWorks fine")
 
     print("=" * 60)
 

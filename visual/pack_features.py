@@ -1,4 +1,4 @@
-"""把融合后的 npy 打包成微调阶段读取的 npz。"""
+"""After fusing npy Packaged for fine-tuning stage readings npz. """
 
 import argparse
 from pathlib import Path
@@ -22,8 +22,8 @@ def pack_one(scene_dir: Path, out_dir: Path) -> int:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--fused-dir', type=Path, required=True, help='infer_fusion.py 的输出目录')
-    parser.add_argument('--out-dir', type=Path, required=True, help='例如 finetune/fusion-train-RGB')
+    parser.add_argument('--fused-dir', type=Path, required=True, help='infer_fusion.py Output directory of')
+    parser.add_argument('--out-dir', type=Path, required=True, help='Example finetune/fusion-train-RGB')
     args = parser.parse_args()
     count = pack_one(args.fused_dir, args.out_dir)
     print(f'wrote {count} npz files to {args.out_dir}')

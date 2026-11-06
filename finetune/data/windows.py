@@ -1,4 +1,4 @@
-"""把 CSI 和视觉特征切成滑窗，供微调训练。"""
+"""Put the CSI and visual features into a sliding window., For fine-tuning training. """
 
 import numpy as np
 import torch
@@ -46,13 +46,13 @@ class SlidingWindowCSIDataset(Dataset):
 
         if verbose:
             print(f"\n{'='*80}")
-            print(f"初始化滑动窗口CSI数据集")
+            print(f"Initialize Sliding WindowCSIDataset")
             print(f"{'='*80}")
-            print(f"配置:")
-            print(f"  窗口大小: {window_size}帧")
-            print(f"  步长: {stride}帧")
-            print(f"  最小有效帧: {min_valid_frames}帧")
-            print(f"  RGB策略: {rgb_strategy}")
+            print(f"Configuration:")
+            print(f"  Window size: {window_size}Frame")
+            print(f"  Step: {stride}Frame")
+            print(f"  Minimum Effective Frame: {min_valid_frames}Frame")
+            print(f"  RGBStrategy: {rgb_strategy}")
 
         self.samples = []
         self.windows = []
@@ -60,15 +60,15 @@ class SlidingWindowCSIDataset(Dataset):
         self._scan_samples()
 
         if verbose:
-            print(f"\n数据集初始化完成:")
-            print(f"  总样本数: {len(self.samples)}")
-            print(f"  总有效窗口: {len(self.windows)}")
+            print(f"\nDataset initialization complete:")
+            print(f"  Total Samples: {len(self.samples)}")
+            print(f"  Total active window: {len(self.windows)}")
             print(f"{'='*80}\n")
 
     def _scan_samples(self):
 
         if self.verbose:
-            print(f"\n扫描样本...")
+            print(f"\nScan sample...")
 
         total_samples = 0
         total_windows = 0
@@ -82,13 +82,13 @@ class SlidingWindowCSIDataset(Dataset):
 
                 if not csi_dir.exists():
                     if self.verbose:
-                        print(f"  [WARNING] CSI目录不存在: {csi_dir}")
+                        print(f"  [WARNING] CSIDirectory does not exist: {csi_dir}")
                     continue
 
                 mat_files = list(csi_dir.glob('*.mat'))
                 if len(mat_files) == 0:
                     if self.verbose:
-                        print(f"  [WARNING] 无CSI文件: {csi_dir}")
+                        print(f"  [WARNING] NoneCSIFile: {csi_dir}")
                     continue
 
                 for mat_file in mat_files:
@@ -101,21 +101,21 @@ class SlidingWindowCSIDataset(Dataset):
                     mask_file = self.mask_root / scene / rsf / f"{vehicle}_mask.npy"
                     if not mask_file.exists():
                         if self.verbose:
-                            print(f"  [SKIP] Mask不存在: {scene}/{rsf}/{vehicle}")
+                            print(f"  [SKIP] MaskAbsent: {scene}/{rsf}/{vehicle}")
                         continue
 
                     try:
                         mask = np.load(mask_file)
                     except Exception as e:
                         if self.verbose:
-                            print(f"  [ERROR] 加载mask失败: {scene}/{rsf}/{vehicle}, {e}")
+                            print(f"  [ERROR] LoadmaskFailed: {scene}/{rsf}/{vehicle}, {e}")
                         continue
 
                     sample_windows = self._generate_windows(mask)
 
                     if len(sample_windows) == 0:
                         if self.verbose:
-                            print(f"  [SKIP] 无有效窗口: {scene}/{rsf}/{vehicle}")
+                            print(f"  [SKIP] No active windows: {scene}/{rsf}/{vehicle}")
                         continue
 
                     sample_idx = len(self.samples)
@@ -142,12 +142,12 @@ class SlidingWindowCSIDataset(Dataset):
                     total_valid_windows += len(sample_windows)
 
         if self.verbose:
-            print(f"\n扫描完成:")
-            print(f"  有效样本: {total_samples}")
-            print(f"  理论窗口: {total_windows}")
-            print(f"  有效窗口: {total_valid_windows}")
+            print(f"\nScan Complete:")
+            print(f"  Active Samples: {total_samples}")
+            print(f"  Theoretical Window: {total_windows}")
+            print(f"  Active Window: {total_valid_windows}")
             if total_windows > 0:
-                print(f"  窗口保留率: {total_valid_windows/total_windows*100:.1f}%")
+                print(f"  Window Retention Rate: {total_valid_windows/total_windows*100:.1f}%")
 
     def _generate_windows(self, mask: np.ndarray) -> List[Tuple[int, int, int]]:
 
@@ -241,7 +241,7 @@ class SlidingWindowCSIDataset(Dataset):
             return csi_tensor
 
         except Exception as e:
-            print(f"[ERROR] 加载CSI失败: {csi_file}, {e}")
+            print(f"[ERROR] LoadCSIFailed: {csi_file}, {e}")
             import traceback
             traceback.print_exc()
             return torch.zeros(2, end - start, 128, 32, dtype=torch.float32)
@@ -254,7 +254,7 @@ class SlidingWindowCSIDataset(Dataset):
             mask_tensor = torch.from_numpy(mask_window).float()
             return mask_tensor
         except Exception as e:
-            print(f"[ERROR] 加载mask失败: {mask_file}, {e}")
+            print(f"[ERROR] LoadmaskFailed: {mask_file}, {e}")
             return torch.zeros(end - start, dtype=torch.float32)
 
     def _load_rgb_feature(
@@ -287,14 +287,14 @@ class SlidingWindowCSIDataset(Dataset):
                     rgb_global = rgb_1500[center_idx]
 
             else:
-                raise ValueError(f"未知的RGB策略: {self.rgb_strategy}")
+                raise ValueError(f"UnknownRGBStrategy: {self.rgb_strategy}")
 
             rgb_tensor = torch.from_numpy(rgb_global).float()
 
             return rgb_tensor
 
         except Exception as e:
-            print(f"[ERROR] 加载RGB特征失败: {rgb_npz_file}, {e}")
+            print(f"[ERROR] LoadRGBFeature Failure: {rgb_npz_file}, {e}")
             import traceback
             traceback.print_exc()
             return torch.zeros(1024, dtype=torch.float32)
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     )
 
     print("="*80)
-    print("测试滑动窗口CSI数据集")
+    print("Test Sliding WindowCSIDataset")
     print("="*80)
 
     dataset = SlidingWindowCSIDataset(
@@ -360,25 +360,25 @@ if __name__ == '__main__':
     )
 
     stats = dataset.get_statistics()
-    print(f"\n数据集统计:")
-    print(f"  样本数: {stats['num_samples']}")
-    print(f"  窗口数: {stats['num_windows']}")
-    print(f"  平均窗口/样本: {stats['avg_windows_per_sample']:.1f}")
-    print(f"  平均有效帧/窗口: {stats['avg_valid_frames_per_window']:.1f}")
+    print(f"\nDataset Statistics:")
+    print(f"  Number of samples: {stats['num_samples']}")
+    print(f"  Number of windows: {stats['num_windows']}")
+    print(f"  Average Window/Sample: {stats['avg_windows_per_sample']:.1f}")
+    print(f"  Average Effective Frame/Window: {stats['avg_valid_frames_per_window']:.1f}")
 
     if len(dataset) > 0:
-        print(f"\n测试加载第一个窗口...")
+        print(f"\nTest Load First Window...")
         sample = dataset[0]
 
         print(f"  CSI shape: {sample['csi'].shape}")
         print(f"  Mask shape: {sample['mask'].shape}")
         print(f"  RGB global shape: {sample['rgb_global'].shape}")
-        print(f"  窗口信息: {sample['window_info']}")
-        print(f"  有效帧数: {sample['window_info']['num_valid_frames']}/{dataset.window_size}")
+        print(f"  Window Information: {sample['window_info']}")
+        print(f"  Effective Frames: {sample['window_info']['num_valid_frames']}/{dataset.window_size}")
 
         num_valid = (sample['mask'] == 0).sum().item()
-        print(f"  验证: mask中有效帧 = {num_valid} [OK]")
+        print(f"  Verify: maskValid Frames in = {num_valid} [OK]")
 
     print(f"\n{'='*80}")
-    print("测试完成！")
+    print("Test Complete! ")
     print("="*80)

@@ -1,4 +1,4 @@
-"""根据测试集 CSI 生成掩码，并把后半段标为待预测。"""
+"""According to the test set CSI Generate Mask, and mark the second half as to be predicted. """
 
 import os
 import sys
@@ -105,7 +105,7 @@ def analyze_test_csi_file(csi_file_path, test_frames=750, total_frames=1500):
 def build(test_root, output_root):
 
     print("=" * 80)
-    print("测试集CSI掩码生成 (Scene -> RSF -> Vehicle)")
+    print("Test setCSIMask Generation (Scene -> RSF -> Vehicle)")
     print("=" * 80)
 
     test_root = Path(test_root)

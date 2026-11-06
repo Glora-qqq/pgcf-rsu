@@ -1,4 +1,4 @@
-"""空中目标使用的无迹卡尔曼滤波。"""
+"""Unscented Kalman filter for aerial targets. """
 
 import numpy as np
 
@@ -7,8 +7,8 @@ try:
     HAS_FILTERPY = True
 except ImportError:
     HAS_FILTERPY = False
-    print("⚠️  filterpy未安装，UKF滤波不可用")
-    print("   安装命令: pip install filterpy")
+    print("⚠️  filterpyNot Installed, UKFFilter not available")
+    print("   Installation Commands: pip install filterpy")
 
 class UKF3DFilter:
 
@@ -20,7 +20,7 @@ class UKF3DFilter:
     ):
 
         if not HAS_FILTERPY:
-            raise ImportError("UKF滤波需要filterpy库，请安装: pip install filterpy")
+            raise ImportError("UKFFiltering needsfilterpyLibrary, Please install: pip install filterpy")
 
         self.dt = dt
         self.process_noise = process_noise
@@ -104,7 +104,7 @@ def apply_ukf_to_gps(
 ) -> np.ndarray:
 
     if not HAS_FILTERPY:
-        print("⚠️  filterpy未安装，返回原始GPS数据")
+        print("⚠️  filterpyNot Installed, Return to originalGPSData")
         return gps_positions
 
     ukf = UKF3DFilter(
@@ -135,7 +135,7 @@ class UKF6DFilter:
     ):
 
         if not HAS_FILTERPY:
-            raise ImportError("UKF滤波需要filterpy库，请安装: pip install filterpy")
+            raise ImportError("UKFFiltering needsfilterpyLibrary, Please install: pip install filterpy")
 
         self.dt = dt
 
@@ -255,8 +255,8 @@ if __name__ == "__main__":
         error_noisy = np.linalg.norm(gps_noisy - gt, axis=1).mean()
         error_filtered = np.linalg.norm(gps_filtered - gt, axis=1).mean()
 
-        print(f"原始GPS误差: {error_noisy:.4f}")
-        print(f"UKF滤波误差: {error_filtered:.4f}")
-        print(f"改善: {(1 - error_filtered/error_noisy)*100:.1f}%")
+        print(f"OriginalGPSError: {error_noisy:.4f}")
+        print(f"UKFFilter error: {error_filtered:.4f}")
+        print(f"Improvement: {(1 - error_filtered/error_noisy)*100:.1f}%")
     else:
-        print("filterpy未安装，跳过测试")
+        print("filterpyNot Installed, Skip test")

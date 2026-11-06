@@ -1,4 +1,4 @@
-"""按车辆类型选择卡尔曼或无迹卡尔曼作为输出平滑。"""
+"""Select Kalman or Unscented Kalman by vehicle type as output smoothing. """
 
 import torch
 import numpy as np
@@ -40,16 +40,16 @@ class VehicleAdaptiveOutputFilter:
             self.device = poses_6d.device
 
         if self._first_call:
-            print(f"\n[VehicleAdaptiveOutputFilter] 初始化")
+            print(f"\n[VehicleAdaptiveOutputFilter] Initialization")
             print(f"  - Batch size: {poses_6d.shape[0]}")
             print(f"  - Time steps: {poses_6d.shape[1]}")
             print(f"  - Vehicles: {vehicle_names}")
-            print(f"  - Car 2D Kalman参数: process_noise={self.car_process_noise}, measurement_noise={self.car_measurement_noise}")
-            print(f"  - AT 3D UKF参数: process_noise={self.at_ukf_process_noise}, measurement_noise={self.at_ukf_measurement_noise}")
+            print(f"  - Car 2D KalmanParameter: process_noise={self.car_process_noise}, measurement_noise={self.car_measurement_noise}")
+            print(f"  - AT 3D UKFParameter: process_noise={self.at_ukf_process_noise}, measurement_noise={self.at_ukf_measurement_noise}")
             self._first_call = False
 
         B, T, _ = poses_6d.shape
-        assert len(vehicle_names) == B, f"vehicle_names长度 ({len(vehicle_names)}) 必须等于batch size ({B})"
+        assert len(vehicle_names) == B, f"vehicle_namesLength ({len(vehicle_names)}) Must be equal tobatch size ({B})"
 
         smoothed_batch = []
         for i in range(B):
@@ -109,7 +109,7 @@ class VehicleAdaptiveOutputFilter:
             pose_smoothed = torch.from_numpy(result_np).float().to(device)
 
         except Exception as e:
-            print(f"[WARNING] Car滤波失败: {e}")
+            print(f"[WARNING] CarFailure to filter: {e}")
             pose_smoothed = pose_6d
 
         return pose_smoothed
@@ -143,7 +143,7 @@ class VehicleAdaptiveOutputFilter:
             pose_smoothed = torch.from_numpy(result_np).float().to(device)
 
         except Exception as e:
-            print(f"[WARNING] AT UKF滤波失败: {e}")
+            print(f"[WARNING] AT UKFFailure to filter: {e}")
             pose_smoothed = pose_6d
 
         return pose_smoothed

@@ -1,4 +1,4 @@
-"""为三视角融合提供成对的特征样本。"""
+"""Provides paired feature samples for triple vision fusion. """
 
 import os
 import numpy as np
@@ -19,7 +19,7 @@ class MultiViewFusionDataset(Dataset):
         self.samples = samples
         self.views = views
 
-        print(f"初始化数据集: {len(self.samples)} 个样本")
+        print(f"Initialize Dataset: {len(self.samples)} samples")
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -34,7 +34,7 @@ class MultiViewFusionDataset(Dataset):
             filepath = os.path.join(self.feature_dir, scene_name, rsf_name, filename)
 
             if not os.path.exists(filepath):
-                raise FileNotFoundError(f"特征文件不存在: {filepath}")
+                raise FileNotFoundError(f"Feature file does not exist: {filepath}")
 
             feature = np.load(filepath)
             feature_tensor = torch.from_numpy(feature).float()
@@ -104,9 +104,9 @@ def create_dataloaders(
         pin_memory=True if torch.cuda.is_available() else False
     )
 
-    print(f"\n数据加载器创建完成:")
-    print(f"  训练样本: {len(train_dataset)}")
-    print(f"  验证样本: {len(val_dataset)}")
+    print(f"\nData Loader Creation Complete:")
+    print(f"  Training Samples: {len(train_dataset)}")
+    print(f"  Validate Sample: {len(val_dataset)}")
     print(f"  Batch Size: {batch_size}")
 
     return train_loader, val_loader

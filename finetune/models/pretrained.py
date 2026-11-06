@@ -1,4 +1,4 @@
-"""把 WiFo-RGB 预训练权重载入编码器。"""
+"""Put the WiFo-RGB Pre-trained weight load encoder. """
 
 import torch
 import os

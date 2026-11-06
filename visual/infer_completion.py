@@ -1,4 +1,4 @@
-"""用训练好的 Transformer 补全缺失帧的视觉特征。"""
+"""Trained with Transformer Completion of visual features of missing frames. """
 
 import os
 import sys
@@ -21,7 +21,7 @@ class DINOv2FeatureExtractor:
 
         self.device = device
 
-        print(f"🔧 加载DINOv2模型: {DINOV2_MODEL_NAME}")
+        print(f"🔧 LoadDINOv2Model: {DINOV2_MODEL_NAME}")
 
         dinov2_path = Path(os.environ.get('DINOV2_ROOT', Path(weights_path).parent.parent))
         if str(dinov2_path) not in sys.path:
@@ -31,7 +31,7 @@ class DINOv2FeatureExtractor:
             import dinov2.models.vision_transformer as vits
         except ImportError:
             raise ImportError(
-                f"无法导入dinov2模块，请确认路径: {dinov2_path}"
+                f"Unable to importdinov2Module, Please confirm the path: {dinov2_path}"
             )
 
         if DINOV2_MODEL_NAME == 'dinov2_vitl14_reg':
@@ -43,10 +43,10 @@ class DINOv2FeatureExtractor:
                 block_chunks=0
             )
         else:
-            raise ValueError(f"不支持的模型: {DINOV2_MODEL_NAME}")
+            raise ValueError(f"Unsupported model: {DINOV2_MODEL_NAME}")
 
         if os.path.exists(weights_path):
-            print(f"📦 加载权重: {weights_path}")
+            print(f"📦 Loading weights: {weights_path}")
             checkpoint = torch.load(weights_path, map_location='cpu')
 
             if 'model' in checkpoint:
@@ -58,12 +58,12 @@ class DINOv2FeatureExtractor:
 
             self.model.load_state_dict(state_dict, strict=True)
         else:
-            print(f"⚠️  权重文件不存在: {weights_path}")
+            print(f"⚠️  Weight file does not exist: {weights_path}")
 
         self.model = self.model.to(device)
         self.model.eval()
 
-        print(f"✅ DINOv2模型加载完成")
+        print(f"✅ DINOv2Model loading complete")
 
     @torch.no_grad()
     def infer(self, images: torch.Tensor, batch_size: int = 32) -> torch.Tensor:
@@ -89,12 +89,12 @@ class DINOv2FeatureExtractor:
 
 def load_transformer_model(model_path: str, device: torch.device) -> nn.Module:
 
-    print(f"🔧 加载Transformer模型: {model_path}")
+    print(f"🔧 LoadTransformerModel: {model_path}")
 
     checkpoint = torch.load(model_path, map_location='cpu')
 
     config = checkpoint.get('config', {})
-    print(f"📋 模型配置: {config}")
+    print(f"📋 Model Configuration: {config}")
 
     model = TransformerFeatureCompletion(
         d_model=config.get('d_model', TRANSFORMER_D_MODEL),
@@ -109,9 +109,9 @@ def load_transformer_model(model_path: str, device: torch.device) -> nn.Module:
     model = model.to(device)
     model.eval()
 
-    print(f"✅ Transformer模型加载完成")
-    print(f"   训练轮次: {checkpoint.get('epoch', 'N/A')}")
-    print(f"   验证损失: {checkpoint.get('val_loss', 'N/A'):.4f}")
+    print(f"✅ TransformerModel loading complete")
+    print(f"   Training rounds: {checkpoint.get('epoch', 'N/A')}")
+    print(f"   Validate loss: {checkpoint.get('val_loss', 'N/A'):.4f}")
 
     return model
 
@@ -159,25 +159,25 @@ def infer_set(
 ):
 
     print("\n" + "=" * 80)
-    print(f"🚀 开始提取 {dataset_name.upper()} 数据集特征")
+    print(f"🚀 Start fetching {dataset_name.upper()} Dataset characteristics")
     print("=" * 80)
 
     samples = create_extract_samples(dataset_config, VIEWS)
 
     if not samples:
-        print(f"⚠️  未找到任何样本，跳过")
+        print(f"⚠️  No samples found, Skip")
         return
 
-    print(f"📊 共 {len(samples)} 个样本待处理")
+    print(f"📊 of {len(samples)} samples pending")
 
     output_dir = dataset_config['output_dir']
     os.makedirs(output_dir, exist_ok=True)
-    print(f"📁 输出目录: {output_dir}")
+    print(f"📁 Output directory: {output_dir}")
 
     success_count = 0
     fail_count = 0
 
-    for sample in tqdm(samples, desc=f"提取{dataset_name}特征", ncols=100):
+    for sample in tqdm(samples, desc=f"Extract{dataset_name}Features", ncols=100):
         try:
             features = extract_sample_features(
                 sample,
@@ -191,38 +191,38 @@ def infer_set(
             success_count += 1
 
         except Exception as e:
-            print(f"\n❌ 处理失败: {sample}, 错误: {e}")
+            print(f"\n❌ Processing failed: {sample}, Error: {e}")
             fail_count += 1
             continue
 
     print("\n" + "=" * 80)
-    print(f"✅ {dataset_name.upper()} 数据集提取完成")
-    print(f"   成功: {success_count}/{len(samples)}")
-    print(f"   失败: {fail_count}/{len(samples)}")
+    print(f"✅ {dataset_name.upper()} Dataset extraction complete")
+    print(f"   Success: {success_count}/{len(samples)}")
+    print(f"   Failed: {fail_count}/{len(samples)}")
     print("=" * 80)
 
 def main():
 
     print("=" * 80)
-    print("🎯 环境特征提取程序")
+    print("🎯 Environmental Characteristics Extraction Procedure")
     print("=" * 80)
-    print(f"⏰ 开始时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"⏰ Start time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    print("\n📋 验证配置...")
+    print("\n📋 Validate Configuration...")
     if not validate_config():
-        print("❌ 配置验证失败，退出")
+        print("❌ Configuration validation failed, Exit")
         return
 
     available_gpus = torch.cuda.device_count()
     if available_gpus == 0:
-        print("❌ 没有可用的GPU")
+        print("❌ Not availableGPU")
         return
 
     device = torch.device("cuda:0")
-    print(f"\n🎮 使用GPU: cuda:0 (可见GPU数: {available_gpus})")
+    print(f"\n🎮 UseGPU: cuda:0 (VisibleGPUNumber: {available_gpus})")
 
     print("\n" + "=" * 80)
-    print("🔧 加载模型")
+    print("🔧 Load Model")
     print("=" * 80)
 
     backbone = DINOv2FeatureExtractor(DINOV2_WEIGHTS_PATH, device)
@@ -246,8 +246,8 @@ def main():
     )
 
     print("\n" + "=" * 80)
-    print("🎉 所有特征提取完成！")
-    print(f"⏰ 结束时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🎉 All feature extraction completed! ")
+    print(f"⏰ End time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 80)
 
 if __name__ == "__main__":

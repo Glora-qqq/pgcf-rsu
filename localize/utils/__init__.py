@@ -1,4 +1,4 @@
-"""导出坐标变换、路侧天线位置、损失和轨迹指标。"""
+"""Export Coordinate Transform, Roadside antenna location, Loss and trajectory indicators. """
 
 from .constants import *
 from .constants import get_vehicle_height_correction

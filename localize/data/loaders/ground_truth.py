@@ -1,4 +1,4 @@
-"""读取车辆位姿真值。"""
+"""Read Vehicle Position True Value. """
 
 import os
 import numpy as np
@@ -27,7 +27,7 @@ def load_trajectory_txt(
             data = data.reshape(1, -1)
 
         if data.shape[1] < 6:
-            raise ValueError(f"数据列数不足，期望至少6列，实际{data.shape[1]}列")
+            raise ValueError(f"Insufficient data columns, Expect at least6Columns, Actual{data.shape[1]}Columns")
 
         positions = data[:, :3]
         orientations_raw = data[:, 3:6]
@@ -81,8 +81,8 @@ def load_trajectory_txt(
         return positions, orientations, frame_ids, metadata
 
     except Exception as e:
-        print(f"[ERROR] 加载轨迹文件失败: {txt_file_path}")
-        print(f"        错误: {e}")
+        print(f"[ERROR] Failed to load track file: {txt_file_path}")
+        print(f"        Error: {e}")
         return None, None, None, {'error': str(e), 'file_path': str(txt_file_path)}
 
 def load_vehicle_gt(
@@ -99,9 +99,9 @@ def load_vehicle_gt(
         gt_file = vehicle_dir / f"{vehicle_name}_train_cat_gt.txt"
 
     if not gt_file.exists():
-        print(f"[WARNING] 找不到GT文件:")
-        print(f"           场景={scene_name}, 车辆={vehicle_name}")
-        print(f"           路径={gt_file}")
+        print(f"[WARNING] Not foundGTFile:")
+        print(f"           Scenario={scene_name}, Vehicle={vehicle_name}")
+        print(f"           Path={gt_file}")
         return None, None, None, {'error': 'file_not_found'}
 
     return load_trajectory_txt(gt_file, scene_name, vehicle_name, apply_correction)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[3] / 'data')) / 'train'
 
     print("="*80)
-    print("测试普通车辆 (Car10, Scene1)")
+    print("Test Ordinary Vehicles (Car10, Scene1)")
     print("="*80)
     positions, orientations, frame_ids, metadata = load_vehicle_gt(
         data_root,
@@ -119,17 +119,17 @@ if __name__ == '__main__':
     )
 
     if positions is not None:
-        print(f"加载成功:")
-        print(f"  帧数: {metadata['num_frames']}")
-        print(f"  是否空中车辆: {metadata['is_aerial']}")
-        print(f"  高度修正: {metadata['height_correction_applied']}")
-        print(f"\n前3帧位置:")
+        print(f"Loaded successfully:")
+        print(f"  Frames: {metadata['num_frames']}")
+        print(f"  Is Air Vehicle: {metadata['is_aerial']}")
+        print(f"  Height correction: {metadata['height_correction_applied']}")
+        print(f"\nago3Frame position:")
         print(positions[:3])
-        print(f"\n前3帧姿态 (弧度):")
+        print(f"\nago3Frame Pose (Radian):")
         print(orientations[:3])
 
     print("\n" + "="*80)
-    print("测试空中出租车 (AT1, Scene3)")
+    print("Test Air Taxi (AT1, Scene3)")
     print("="*80)
     positions, orientations, frame_ids, metadata = load_vehicle_gt(
         data_root,
@@ -138,11 +138,11 @@ if __name__ == '__main__':
     )
 
     if positions is not None:
-        print(f"加载成功:")
-        print(f"  帧数: {metadata['num_frames']}")
-        print(f"  是否空中车辆: {metadata['is_aerial']}")
-        print(f"  高度修正: {metadata['height_correction_applied']}")
-        print(f"\n前3帧位置:")
+        print(f"Loaded successfully:")
+        print(f"  Frames: {metadata['num_frames']}")
+        print(f"  Is Air Vehicle: {metadata['is_aerial']}")
+        print(f"  Height correction: {metadata['height_correction_applied']}")
+        print(f"\nago3Frame position:")
         print(positions[:3])
-        print(f"\n前3帧姿态 (弧度):")
+        print(f"\nago3Frame Pose (Radian):")
         print(orientations[:3])

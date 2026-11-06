@@ -1,4 +1,4 @@
-"""根据训练集 CSI 是否有效，生成微调用掩码。"""
+"""According to the training set CSI Valid or not, Generate Fine Tuning Mask. """
 
 import os
 import sys
@@ -50,14 +50,14 @@ def analyze_csi_file(csi_file_path, expected_frames=1500, zero_threshold=1e-6):
         return manual_mask, frame_status, valid_count, missing_count
 
     except Exception as e:
-        print(f"[ERROR] 分析 CSI 文件失败: {csi_file_path}, {e}")
+        print(f"[ERROR] Analytics CSI File failed: {csi_file_path}, {e}")
         manual_mask = np.ones(expected_frames, dtype=np.float32)
         return manual_mask, [], 0, expected_frames
 
 def generate_all_masks(data_root='train', output_root='WiFo_CSI/masks'):
 
     print("=" * 80)
-    print("CSI 掩码生成（按 Scene -> RSF -> Vehicle 层级）")
+    print("CSI Mask Generation (By Scene -> RSF -> Vehicle Hierarchy) ")
     print("=" * 80)
 
     data_root = Path(data_root)
@@ -109,7 +109,7 @@ def generate_all_masks(data_root='train', output_root='WiFo_CSI/masks'):
                 if len(parts) >= 2:
                     vehicle_name = parts[1]
                 else:
-                    print(f"[WARN] 无法从文件名提取车编号: {filename}")
+                    print(f"[WARN] Could not fetch car number from filename: {filename}")
                     continue
 
                 manual_mask, frame_status, valid_count, missing_count = analyze_csi_file(
@@ -138,22 +138,22 @@ def generate_all_masks(data_root='train', output_root='WiFo_CSI/masks'):
                 stats['by_rsf'][rsf_name]['missing'] += missing_count
 
                 valid_ratio = valid_count / 1500 * 100
-                print(f"    {vehicle_name}: {valid_count}/1500 有效帧 ({valid_ratio:.1f}%) -> {output_file}")
+                print(f"    {vehicle_name}: {valid_count}/1500 Valid Frames ({valid_ratio:.1f}%) -> {output_file}")
 
     print("\n" + "=" * 80)
-    print("掩码生成完成")
+    print("Mask generation complete")
     print("=" * 80)
-    print(f"\n总统计:")
-    print(f"  总文件数: {stats['total_files']}")
-    print(f"  总有效帧: {stats['total_valid_frames']}")
-    print(f"  总缺失帧: {stats['total_missing_frames']}")
-    print(f"  平均有效率: {stats['total_valid_frames'] / (stats['total_files'] * 1500) * 100:.1f}%")
+    print(f"\nPresidential Statistics:")
+    print(f"  Total Files: {stats['total_files']}")
+    print(f"  Total Effective Frames: {stats['total_valid_frames']}")
+    print(f"  Total Missing Frames: {stats['total_missing_frames']}")
+    print(f"  Average effective rate: {stats['total_valid_frames'] / (stats['total_files'] * 1500) * 100:.1f}%")
 
-    print(f"\n按 RSF 统计:")
+    print(f"\nBy RSF Statistics:")
     for rsf_name, rsf_stats in sorted(stats['by_rsf'].items()):
         if rsf_stats['files'] > 0:
             valid_ratio = rsf_stats['valid'] / (rsf_stats['files'] * 1500) * 100
-            print(f"  {rsf_name}: {rsf_stats['files']} 文件, {rsf_stats['valid']}/{rsf_stats['files']*1500} 有效帧 ({valid_ratio:.1f}%)")
+            print(f"  {rsf_name}: {rsf_stats['files']} File, {rsf_stats['valid']}/{rsf_stats['files']*1500} Valid Frames ({valid_ratio:.1f}%)")
 
     stats_file = output_root / 'mask_statistics.json'
     with open(stats_file, 'w', encoding='utf-8') as f:
@@ -168,8 +168,8 @@ def generate_all_masks(data_root='train', output_root='WiFo_CSI/masks'):
         }
         json.dump(stats_dict, f, indent=2, ensure_ascii=False)
 
-    print(f"\n统计信息已保存: {stats_file}")
-    print(f"掩码文件已保存到: {output_root}")
+    print(f"\nStats saved: {stats_file}")
+    print(f"Mask file saved to: {output_root}")
 
 if __name__ == '__main__':
     data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[2] / 'data')) / 'train'

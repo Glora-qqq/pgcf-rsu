@@ -1,4 +1,4 @@
-"""导出几何编码、质量融合、时序模型和位姿回归。"""
+"""Export geometric coding, Quality Fusion, Timing model and pose regression. """
 
 from .geometry import (
     compute_frame_spatial_features,

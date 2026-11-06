@@ -1,4 +1,4 @@
-"""加载定位权重，输出三个场景的车辆轨迹。"""
+"""Load positioning weights, Output vehicle trajectory for three scenarios. """
 
 import sys
 from pathlib import Path
@@ -46,7 +46,7 @@ def apply_post_car_kalman(positions, config):
     from utils.kalman import KalmanFilter6D
 
     if not KALMAN_AVAILABLE:
-        print(f"  [后处理] 跳过Car滤波（filterpy未安装）")
+        print(f"  [Post-processing] SkipCarFilter (filterpyNot Installed) ")
         positions[:, 2] = 0.0
         return positions
 
@@ -67,8 +67,8 @@ def apply_post_car_kalman(positions, config):
     smoothed_positions = smoothed_6d[:, :3].copy()
     smoothed_positions[:, 2] = 0.0
 
-    print(f"  [后处理] Car 2D卡尔曼滤波完成（XY降噪，Z=0）")
-    print(f"    - 参数: Q={process_noise}, R={measurement_noise}")
+    print(f"  [Post-processing] Car 2DKalman filtering complete (XYNoise Reduction, Z=0) ")
+    print(f"    - Parameter: Q={process_noise}, R={measurement_noise}")
 
     return smoothed_positions
 
@@ -77,7 +77,7 @@ def apply_post_at_ukf(positions, config):
     try:
         from utils.ukf import UKF6DFilter
     except ImportError:
-        print(f"  [后处理] 跳过AT UKF滤波（UKF模块未安装）")
+        print(f"  [Post-processing] SkipAT UKFFilter (UKFModule not installed) ")
         return positions
 
     process_noise = getattr(config, 'POST_AT_UKF_CONFIG', {}).get('process_noise', 0.1)
@@ -99,8 +99,8 @@ def apply_post_at_ukf(positions, config):
 
     smoothed_positions = smoothed_6d[:, :3].copy()
 
-    print(f"  [后处理] AT 3D UKF滤波完成（XYZ降噪）")
-    print(f"    - 参数: Q={process_noise}, R={measurement_noise}, dt={dt}")
+    print(f"  [Post-processing] AT 3D UKFFilter complete (XYZNoise Reduction) ")
+    print(f"    - Parameter: Q={process_noise}, R={measurement_noise}, dt={dt}")
 
     return smoothed_positions
 
@@ -129,10 +129,10 @@ def smooth_positions_xyz(positions, window, poly):
 
 def load_model(checkpoint_path, config, device):
 
-    print(f"\n[加载模型] {checkpoint_path}")
+    print(f"\n[Load Model] {checkpoint_path}")
 
     if not Path(checkpoint_path).exists():
-        raise FileNotFoundError(f"模型检查点不存在: {checkpoint_path}")
+        raise FileNotFoundError(f"Model checkpoint does not exist: {checkpoint_path}")
 
     checkpoint = torch.load(checkpoint_path, map_location=device)
 
@@ -140,7 +140,7 @@ def load_model(checkpoint_path, config, device):
     if isinstance(ckpt_cfg, dict):
         modality = str(ckpt_cfg.get('ablation_modality', getattr(config, 'ablation_modality', 'full')) or 'full').lower()
         if modality != str(getattr(config, 'ablation_modality', 'full')).lower():
-            print(f"  [同步] checkpoint.ablation_modality={modality} → 覆盖测试 config")
+            print(f"  [Sync] checkpoint.ablation_modality={modality} → Override Test config")
             config.ablation_modality = modality
         if 'geo_proj_hidden' in ckpt_cfg:
             config.geo_proj_hidden = ckpt_cfg['geo_proj_hidden']
@@ -149,16 +149,16 @@ def load_model(checkpoint_path, config, device):
 
     if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
         model.load_state_dict(checkpoint['model_state_dict'])
-        print(f"✓ 加载模型权重成功")
+        print(f"✓ Model weights loaded successfully")
 
         if 'epoch' in checkpoint:
-            print(f"  - 训练轮次: {checkpoint['epoch']}")
+            print(f"  - Training rounds: {checkpoint['epoch']}")
         if 'best_val_loss' in checkpoint:
-            print(f"  - 最佳验证损失: {checkpoint['best_val_loss']:.4f}")
+            print(f"  - Best Validation Loss: {checkpoint['best_val_loss']:.4f}")
         print(f"  - ablation_modality: {getattr(config, 'ablation_modality', 'full')}")
     else:
         model.load_state_dict(checkpoint)
-        print(f"✓ 加载模型权重成功（直接加载）")
+        print(f"✓ Model weights loaded successfully (Direct loading) ")
 
     model.eval()
 
@@ -167,7 +167,7 @@ def load_model(checkpoint_path, config, device):
 def test_single_vehicle(model, test_loader, device, scene_name, vehicle_name, output_dir, config):
 
     print(f"\n{'='*60}")
-    print(f"测试车辆: {scene_name}/{vehicle_name}")
+    print(f"Test Vehicle: {scene_name}/{vehicle_name}")
     print(f"{'='*60}")
 
     model.eval()
@@ -201,7 +201,7 @@ def test_single_vehicle(model, test_loader, device, scene_name, vehicle_name, ou
     is_car = not vehicle_name.startswith('AT')
 
     if USE_POST_PROCESSING_FILTER and is_car:
-        print(f"\n  [后处理] Car车辆: 应用2D卡尔曼滤波...")
+        print(f"\n  [Post-processing] CarVehicle: Apply2DKalman filtering...")
         all_predictions = apply_post_car_kalman(
             all_predictions,
             config=type('Config', (), {
@@ -211,10 +211,10 @@ def test_single_vehicle(model, test_loader, device, scene_name, vehicle_name, ou
         )
     elif is_car:
         all_predictions[:, 2] = 0.0
-        print(f"  [后处理] 跳过Car滤波，Z设为0")
+        print(f"  [Post-processing] SkipCarFilter, ZSet to0")
     else:
         if USE_POST_AT_UKF and vehicle_name in POST_AT_UKF_ENABLED_VEHICLES:
-            print(f"\n  [后处理] AT车辆 {vehicle_name}: 应用3D UKF滤波...")
+            print(f"\n  [Post-processing] ATVehicle {vehicle_name}: Apply3D UKFFilter...")
             all_predictions = apply_post_at_ukf(
                 all_predictions,
                 config=type('Config', (), {
@@ -222,15 +222,15 @@ def test_single_vehicle(model, test_loader, device, scene_name, vehicle_name, ou
                 })
             )
         else:
-            print(f"  [后处理] AT车辆 {vehicle_name}: 直接使用模型预测输出")
+            print(f"  [Post-processing] ATVehicle {vehicle_name}: Predict output directly using the model")
 
     if ENABLE_OUTPUT_SG_SMOOTH:
         if is_car:
             all_predictions = smooth_positions_xy(all_predictions, OUTPUT_SG_WINDOW_CAR, OUTPUT_SG_POLYORDER_CAR)
-            print(f"  [平滑] Car SG平滑完成 (window={OUTPUT_SG_WINDOW_CAR}, poly={OUTPUT_SG_POLYORDER_CAR})")
+            print(f"  [Smoothing] Car SGSmooth Done (window={OUTPUT_SG_WINDOW_CAR}, poly={OUTPUT_SG_POLYORDER_CAR})")
         else:
             all_predictions = smooth_positions_xyz(all_predictions, OUTPUT_SG_WINDOW_AT, OUTPUT_SG_POLYORDER_AT)
-            print(f"  [平滑] AT SG平滑完成 (window={OUTPUT_SG_WINDOW_AT}, poly={OUTPUT_SG_POLYORDER_AT})")
+            print(f"  [Smoothing] AT SGSmooth Done (window={OUTPUT_SG_WINDOW_AT}, poly={OUTPUT_SG_POLYORDER_AT})")
 
     scene_dir = output_dir / SCENE_DIR_MAPPING[scene_name]
     scene_dir.mkdir(parents=True, exist_ok=True)
@@ -247,15 +247,15 @@ def test_single_vehicle(model, test_loader, device, scene_name, vehicle_name, ou
                    f"{z:.{POSITION_DECIMAL_PLACES}f} "
                    f"{frame_id}\n")
 
-    print(f"✓ 预测完成: {len(all_predictions)} 帧")
-    print(f"✓ 保存到: {output_file}")
+    print(f"✓ Forecast Complete: {len(all_predictions)} Frame")
+    print(f"✓ Save to: {output_file}")
 
     return output_file
 
 def test_all_vehicles(model, config, device):
 
     print(f"\n{'='*60}")
-    print("开始测试所有车辆")
+    print("Start testing all vehicles")
     print(f"{'='*60}")
 
     results = {
@@ -270,13 +270,13 @@ def test_all_vehicles(model, config, device):
     total_vehicles = sum(len(vehicles) for vehicles in test_vehicles.values())
     results['total_vehicles'] = total_vehicles
 
-    print(f"\n总计: {total_vehicles} 辆车")
+    print(f"\nTotal: {total_vehicles} cars")
     for scene, vehicles in test_vehicles.items():
-        print(f"  {scene}: {len(vehicles)} 辆车")
+        print(f"  {scene}: {len(vehicles)} cars")
 
     for scene_name, vehicles in test_vehicles.items():
         print(f"\n{'='*60}")
-        print(f"场景: {scene_name}")
+        print(f"Scenario: {scene_name}")
         print(f"{'='*60}")
 
         for vehicle_name in vehicles:
@@ -314,8 +314,8 @@ def test_all_vehicles(model, config, device):
                 results['output_files'].append(str(output_file))
 
             except Exception as e:
-                print(f"✗ 测试失败: {scene_name}/{vehicle_name}")
-                print(f"  错误: {e}")
+                print(f"✗ Test failed: {scene_name}/{vehicle_name}")
+                print(f"  Error: {e}")
                 results['failed_vehicles'].append({
                     'scene': scene_name,
                     'vehicle': vehicle_name,
@@ -345,41 +345,41 @@ def save_test_summary(results, config):
     with open(summary_file, 'w', encoding='utf-8') as f:
         json.dump(summary, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✓ 测试摘要已保存: {summary_file}")
+    print(f"\n✓ Test Summary Saved: {summary_file}")
 
 def main():
 
     print("=" * 80)
-    print("PGCF-RSU 定位推理")
+    print("PGCF-RSU Positioning inference")
     print("=" * 80)
 
-    print(f"\n[配置信息]")
-    print(f"  测试数据根目录: {TEST_DATA_ROOT}")
-    print(f"  WiFo特征根目录: {TEST_WIFO_FEATURES_ROOT}")
-    print(f"  模型检查点: {MODEL_CHECKPOINT_PATH}")
-    print(f"  输出目录: {TEST_OUTPUT_ROOT}")
-    print(f"  设备: {TEST_DEVICE}")
-    print(f"\n[滤波配置]")
-    print(f"  输入端Car: {'2D Kalman滤波' if USE_INPUT_KALMAN else '无滤波'}")
-    print(f"  输入端AT: {'3D UKF滤波' if USE_AT_UKF else '无滤波'}")
-    print(f"  输出端后处理:")
+    print(f"\n[Configuration Information]")
+    print(f"  Test Data Root: {TEST_DATA_ROOT}")
+    print(f"  WiFoFeature Root: {TEST_WIFO_FEATURES_ROOT}")
+    print(f"  Model checkpoint: {MODEL_CHECKPOINT_PATH}")
+    print(f"  Output directory: {TEST_OUTPUT_ROOT}")
+    print(f"  Equipment: {TEST_DEVICE}")
+    print(f"\n[Filter Configuration]")
+    print(f"  InputCar: {'2D KalmanFilter' if USE_INPUT_KALMAN else 'No filtering'}")
+    print(f"  InputAT: {'3D UKFFilter' if USE_AT_UKF else 'No filtering'}")
+    print(f"  Output end post-processing:")
     if USE_POST_PROCESSING_FILTER:
-        print(f"    ✅ 启用（Car + AT车辆）")
-        print(f"       - Car: 2D Kalman后处理 (Q={POST_CAR_PROCESS_NOISE}, R={POST_CAR_MEASUREMENT_NOISE})")
+        print(f"    ✅ Enable (Car + ATVehicle) ")
+        print(f"       - Car: 2D KalmanPost-processing (Q={POST_CAR_PROCESS_NOISE}, R={POST_CAR_MEASUREMENT_NOISE})")
         if USE_POST_AT_UKF:
-            print(f"       - AT: 3D UKF后处理 (Q={POST_AT_UKF_CONFIG.get('process_noise', 0.1)}, R={POST_AT_UKF_CONFIG.get('measurement_noise', 1.6)}, dt={POST_AT_UKF_CONFIG.get('dt', 0.05)})")
+            print(f"       - AT: 3D UKFPost-processing (Q={POST_AT_UKF_CONFIG.get('process_noise', 0.1)}, R={POST_AT_UKF_CONFIG.get('measurement_noise', 1.6)}, dt={POST_AT_UKF_CONFIG.get('dt', 0.05)})")
         else:
-            print(f"       - AT: 直接使用模型预测输出")
+            print(f"       - AT: Predict output directly using the model")
     else:
-        print(f"    ❌ 关闭")
-    print(f"\n✓ 将测试所有场景的所有车辆 (共22辆)")
+        print(f"    ❌ Close")
+    print(f"\n✓ All vehicles in all scenarios will be tested (of22Vehicles)")
 
     if not TEST_DATA_ROOT.exists():
-        raise FileNotFoundError(f"测试数据根目录不存在: {TEST_DATA_ROOT}")
+        raise FileNotFoundError(f"Test data root directory does not exist: {TEST_DATA_ROOT}")
     if not TEST_WIFO_FEATURES_ROOT.exists():
-        raise FileNotFoundError(f"WiFo特征根目录不存在: {TEST_WIFO_FEATURES_ROOT}")
+        raise FileNotFoundError(f"WiFoFeature root directory does not exist: {TEST_WIFO_FEATURES_ROOT}")
     if not MODEL_CHECKPOINT_PATH.exists():
-        raise FileNotFoundError(f"模型检查点不存在: {MODEL_CHECKPOINT_PATH}")
+        raise FileNotFoundError(f"Model checkpoint does not exist: {MODEL_CHECKPOINT_PATH}")
 
     config = TrainConfig(
         use_adaptive_kalman=True,
@@ -397,12 +397,12 @@ def main():
         ablation_modality=ABLATION_MODALITY,
     )
 
-    print(f"✓ 配置加载成功")
-    print(f"  - Car车辆: {'2D Kalman滤波' if USE_INPUT_KALMAN else '无滤波'}")
+    print(f"✓ Configuration loaded successfully")
+    print(f"  - CarVehicle: {'2D KalmanFilter' if USE_INPUT_KALMAN else 'No filtering'}")
     if USE_AT_UKF:
-        print(f"  - AT车辆: 3D UKF滤波 (Q={AT_UKF_CONFIG['process_noise']}, R={AT_UKF_CONFIG['measurement_noise']}) ✅")
+        print(f"  - ATVehicle: 3D UKFFilter (Q={AT_UKF_CONFIG['process_noise']}, R={AT_UKF_CONFIG['measurement_noise']}) ✅")
     else:
-        print(f"  - AT车辆: 无滤波")
+        print(f"  - ATVehicle: No filtering")
 
     device = torch.device(TEST_DEVICE)
     model = load_model(MODEL_CHECKPOINT_PATH, config, device)
@@ -410,25 +410,25 @@ def main():
     results = test_all_vehicles(model, config, device)
 
     print(f"\n{'='*80}")
-    print("测试完成")
+    print("Test Complete")
     print(f"{'='*80}")
-    print(f"总计: {results['total_vehicles']} 辆车")
-    print(f"成功: {results['success_vehicles']} 辆车")
-    print(f"失败: {len(results['failed_vehicles'])} 辆车")
+    print(f"Total: {results['total_vehicles']} cars")
+    print(f"Success: {results['success_vehicles']} cars")
+    print(f"Failed: {len(results['failed_vehicles'])} cars")
 
     if results['failed_vehicles']:
-        print(f"\n失败车辆:")
+        print(f"\nFailed Vehicle:")
         for failed in results['failed_vehicles']:
             print(f"  - {failed['scene']}/{failed['vehicle']}: {failed['error']}")
 
     save_test_summary(results, config)
 
     print(f"\n{'='*80}")
-    print("所有测试完成！")
-    print(f"预测结果保存在: {TEST_OUTPUT_ROOT}")
-    print(f"  - Scene_1/: {len([v for v in TEST_VEHICLES['Scene1']])} 个文件")
-    print(f"  - Scene_2/: {len([v for v in TEST_VEHICLES['Scene2']])} 个文件")
-    print(f"  - Scene_3/: {len([v for v in TEST_VEHICLES['Scene3']])} 个文件")
+    print("All tests completed! ")
+    print(f"Forecast results saved in: {TEST_OUTPUT_ROOT}")
+    print(f"  - Scene_1/: {len([v for v in TEST_VEHICLES['Scene1']])} files")
+    print(f"  - Scene_2/: {len([v for v in TEST_VEHICLES['Scene2']])} files")
+    print(f"  - Scene_3/: {len([v for v in TEST_VEHICLES['Scene3']])} files")
     print(f"{'='*80}")
 
 if __name__ == '__main__':

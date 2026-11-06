@@ -1,4 +1,4 @@
-"""多 GPU 版本的融合特征导出。"""
+"""Multiple GPU Version Fusion Feature Export. """
 
 import torch
 import torch.multiprocessing as mp
@@ -50,13 +50,13 @@ def collect_all_tasks(is_test=False):
             rsf_dir = data_root / scene / rsf / 'CSI'
 
             if not rsf_dir.exists():
-                print(f"[WARNING] RSF目录不存在: {rsf_dir}")
+                print(f"[WARNING] RSFDirectory does not exist: {rsf_dir}")
                 continue
 
             csi_files = list(rsf_dir.glob('*.mat'))
 
             if not csi_files:
-                print(f"[WARNING] {scene}/{rsf} 无CSI文件")
+                print(f"[WARNING] {scene}/{rsf} NoneCSIFile")
                 continue
 
             vehicles = set()
@@ -80,8 +80,8 @@ def process_task_list(
 ):
 
     device = f'cuda:{gpu_id}'
-    print(f"\n[GPU {gpu_id}] 开始处理 {len(task_list)} 个车辆")
-    print(f"[GPU {gpu_id}] 设备: {device}")
+    print(f"\n[GPU {gpu_id}] Start Processing {len(task_list)} vehicles")
+    print(f"[GPU {gpu_id}] Equipment: {device}")
 
     try:
         extractor = FeatureExtractor(
@@ -90,7 +90,7 @@ def process_task_list(
             device=device
         )
     except Exception as e:
-        print(f"[GPU {gpu_id}] [ERROR] 初始化失败: {e}")
+        print(f"[GPU {gpu_id}] [ERROR] Initialization failed: {e}")
         return
 
     success = 0
@@ -125,18 +125,18 @@ def process_task_list(
                 progress_dict[gpu_id] = (idx + 1, len(task_list), success)
 
         except Exception as e:
-            print(f"[GPU {gpu_id}] [ERROR] {scene}/{rsf}/{vehicle} 失败: {e}")
+            print(f"[GPU {gpu_id}] [ERROR] {scene}/{rsf}/{vehicle} Failed: {e}")
             failed.append(f"{scene}/{rsf}/{vehicle}")
 
             import traceback
             traceback.print_exc()
 
-    print(f"\n[GPU {gpu_id}] 完成！")
-    print(f"[GPU {gpu_id}] 成功: {success}/{len(task_list)}")
-    print(f"[GPU {gpu_id}] 失败: {len(failed)}")
+    print(f"\n[GPU {gpu_id}] Done! ")
+    print(f"[GPU {gpu_id}] Success: {success}/{len(task_list)}")
+    print(f"[GPU {gpu_id}] Failed: {len(failed)}")
 
     if failed:
-        print(f"[GPU {gpu_id}] 失败列表:")
+        print(f"[GPU {gpu_id}] Failure List:")
         for v in failed:
             print(f"  - {v}")
 
@@ -155,14 +155,14 @@ def split_tasks_to_gpus(tasks: List, num_gpus: int) -> List[List]:
 def main():
 
     parser = argparse.ArgumentParser(description='PGCF-RSU feature export')
-    parser.add_argument('--num_gpus', type=int, default=8, help='使用的GPU数量')
-    parser.add_argument('--gpu_ids', type=str, default=None, help='指定GPU ID，例如 "0,1,2,3"')
-    parser.add_argument('--test_only', action='store_true', help='只提取测试集')
-    parser.add_argument('--train_only', action='store_true', help='只提取训练集')
+    parser.add_argument('--num_gpus', type=int, default=8, help='UsedGPUQuantity')
+    parser.add_argument('--gpu_ids', type=str, default=None, help='AssignGPU ID, Example "0,1,2,3"')
+    parser.add_argument('--test_only', action='store_true', help='Only test sets are extracted')
+    parser.add_argument('--train_only', action='store_true', help='Only extract training sets')
     args = parser.parse_args()
 
     print("=" * 70)
-    print("PGCF-RSU 特征导出")
+    print("PGCF-RSU Feature Export")
     print("=" * 70)
 
     if args.gpu_ids:
@@ -172,12 +172,12 @@ def main():
         num_gpus = min(args.num_gpus, torch.cuda.device_count())
         gpu_ids = list(range(num_gpus))
 
-    print(f"\n使用GPU: {gpu_ids} ({num_gpus}张)")
+    print(f"\nUseGPU: {gpu_ids} ({num_gpus}Zhang)")
     print(f"Checkpoint: {CHECKPOINT_PATH}")
 
     for gpu_id in gpu_ids:
         if gpu_id >= torch.cuda.device_count():
-            print(f"[ERROR] GPU {gpu_id} 不存在！")
+            print(f"[ERROR] GPU {gpu_id} Absent! ")
             return
 
         device_name = torch.cuda.get_device_name(gpu_id)
@@ -185,28 +185,28 @@ def main():
 
     print_config_summary()
 
-    print("\n验证配置...")
+    print("\nValidate Configuration...")
     if not verify_config():
-        print("\n⚠️  配置验证失败，请检查路径配置！")
+        print("\n⚠️  Configuration validation failed, Please check the path configuration! ")
         return
 
     if not args.test_only:
         print("\n" + "="*70)
-        print("收集训练集任务...")
+        print("Collect Training Set Tasks...")
         print("="*70)
 
         train_tasks = collect_all_tasks(is_test=False)
-        print(f"总任务数: {len(train_tasks)}")
+        print(f"Total Tasks: {len(train_tasks)}")
 
         if train_tasks:
             train_task_lists = split_tasks_to_gpus(train_tasks, num_gpus)
 
-            print("\n任务分配:")
+            print("\nTask Assignment:")
             for gpu_id, task_list in zip(gpu_ids, train_task_lists):
-                print(f"  GPU {gpu_id}: {len(task_list)} 个车辆")
+                print(f"  GPU {gpu_id}: {len(task_list)} vehicles")
 
             print("\n" + "="*70)
-            print("开始并行提取训练集特征...")
+            print("Start parallel extraction of training set features...")
             print("="*70)
 
             start_time = time.time()
@@ -229,25 +229,25 @@ def main():
                 p.join()
 
             elapsed = time.time() - start_time
-            print(f"\n训练集提取完成！耗时: {elapsed/60:.1f} 分钟")
+            print(f"\nTraining Set Extraction Complete! Time consuming: {elapsed/60:.1f} Minutes")
 
     if not args.train_only:
         print("\n" + "="*70)
-        print("收集测试集任务...")
+        print("Collect Test Set Tasks...")
         print("="*70)
 
         test_tasks = collect_all_tasks(is_test=True)
-        print(f"总任务数: {len(test_tasks)}")
+        print(f"Total Tasks: {len(test_tasks)}")
 
         if test_tasks:
             test_task_lists = split_tasks_to_gpus(test_tasks, num_gpus)
 
-            print("\n任务分配:")
+            print("\nTask Assignment:")
             for gpu_id, task_list in zip(gpu_ids, test_task_lists):
-                print(f"  GPU {gpu_id}: {len(task_list)} 个车辆")
+                print(f"  GPU {gpu_id}: {len(task_list)} vehicles")
 
             print("\n" + "="*70)
-            print("开始并行提取测试集特征...")
+            print("Start parallel extraction of test set features...")
             print("="*70)
 
             start_time = time.time()
@@ -270,13 +270,13 @@ def main():
                 p.join()
 
             elapsed = time.time() - start_time
-            print(f"\n测试集提取完成！耗时: {elapsed/60:.1f} 分钟")
+            print(f"\nTest Set Extraction Complete! Time consuming: {elapsed/60:.1f} Minutes")
 
     print("\n" + "="*70)
-    print("所有特征提取完成！")
+    print("All feature extraction completed! ")
     print("="*70)
 
-    print("\n生成提取摘要...")
+    print("\nGenerate Extraction Summary...")
     try:
         extractor_temp = FeatureExtractor(
             checkpoint_path=CHECKPOINT_PATH,
@@ -284,9 +284,9 @@ def main():
             device='cuda:0'
         )
         extractor_temp.save_extraction_summary()
-        print("✓ 摘要已保存")
+        print("✓ Summary saved")
     except Exception as e:
-        print(f"⚠️  摘要生成失败: {e}")
+        print(f"⚠️  Abstract generation failed: {e}")
 
 if __name__ == '__main__':
     main()

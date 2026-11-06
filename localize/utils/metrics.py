@@ -1,4 +1,4 @@
-"""位置误差和轨迹对比指标。"""
+"""Position error and trajectory comparison indicators. """
 
 import torch
 import numpy as np
@@ -245,38 +245,38 @@ class PositionMetrics:
     def print_metrics(self, metrics_dict):
 
         print("=" * 60)
-        print("位置预测评估结果")
+        print("Location Prediction Evaluation Results")
         print("=" * 60)
 
         pos_metrics = metrics_dict['position_errors']
-        print(f"\n📍 位置误差:")
-        print(f"  RMSE: {pos_metrics['rmse']:.3f} 米")
-        print(f"  MAE:  {pos_metrics['mae']:.3f} 米")
-        print(f"  中位数误差: {pos_metrics['median_error']:.3f} 米")
-        print(f"  最大误差: {pos_metrics['max_error']:.3f} 米")
-        print(f"  95%分位误差: {pos_metrics['p95_error']:.3f} 米")
+        print(f"\n📍 Position error:")
+        print(f"  RMSE: {pos_metrics['rmse']:.3f} m")
+        print(f"  MAE:  {pos_metrics['mae']:.3f} m")
+        print(f"  Median error: {pos_metrics['median_error']:.3f} m")
+        print(f"  Maximum error: {pos_metrics['max_error']:.3f} m")
+        print(f"  95%quantile error: {pos_metrics['p95_error']:.3f} m")
 
         gps_metrics = metrics_dict['gps_improvement']
-        print(f"\n🛰️ GPS改进效果:")
-        print(f"  GPS RMSE: {gps_metrics['gps_rmse']:.3f} 米")
-        print(f"  预测 RMSE: {gps_metrics['pred_rmse']:.3f} 米")
-        print(f"  RMSE改进: {gps_metrics['rmse_improvement']:.3f} 米")
-        print(f"  改进帧比例: {gps_metrics['better_frames_ratio']:.1%}")
-        print(f"  平均改进: {gps_metrics['improvement_mean']:.3f} 米")
+        print(f"\n🛰️ GPSImprovements:")
+        print(f"  GPS RMSE: {gps_metrics['gps_rmse']:.3f} m")
+        print(f"  Forecast RMSE: {gps_metrics['pred_rmse']:.3f} m")
+        print(f"  RMSEImprovement: {gps_metrics['rmse_improvement']:.3f} m")
+        print(f"  Improved Frame Ratio: {gps_metrics['better_frames_ratio']:.1%}")
+        print(f"  Average Improvement: {gps_metrics['improvement_mean']:.3f} m")
 
         traj_metrics = metrics_dict['trajectory_quality']
         if 'velocity' in traj_metrics and traj_metrics['velocity']:
-            print(f"\n🚗 轨迹质量:")
-            print(f"  平均速度: {traj_metrics['velocity']['mean_velocity']:.2f} m/s")
-            print(f"  最大速度: {traj_metrics['velocity']['max_velocity']:.2f} m/s")
-            print(f"  平均加速度: {traj_metrics['acceleration']['mean_acceleration']:.2f} m/s²")
-            print(f"  轨迹平滑度: {traj_metrics['smoothness']:.3f}")
+            print(f"\n🚗 Trajectory Quality:")
+            print(f"  Average Speed: {traj_metrics['velocity']['mean_velocity']:.2f} m/s")
+            print(f"  Max Speed: {traj_metrics['velocity']['max_velocity']:.2f} m/s")
+            print(f"  Average Acceleration: {traj_metrics['acceleration']['mean_acceleration']:.2f} m/s²")
+            print(f"  Trajectory Smoothness: {traj_metrics['smoothness']:.3f}")
 
         conf_metrics = metrics_dict.get('confidence_calibration', {})
         if conf_metrics:
-            print(f"\n🎯 置信度校准:")
-            print(f"  置信度-误差相关性: {conf_metrics['correlation']:.3f}")
-            print(f"  校准误差: {conf_metrics['calibration_error']:.3f}")
-            print(f"  平均置信度: {conf_metrics['mean_confidence']:.3f}")
+            print(f"\n🎯 Confidence calibration:")
+            print(f"  Confidence-Error correlation: {conf_metrics['correlation']:.3f}")
+            print(f"  Calibration error: {conf_metrics['calibration_error']:.3f}")
+            print(f"  Average Confidence: {conf_metrics['mean_confidence']:.3f}")
 
         print("=" * 60)

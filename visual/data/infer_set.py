@@ -1,4 +1,4 @@
-"""按场景和路侧单元组织补全推理样本。"""
+"""Organize completion reasoning samples by scene and roadside unit. """
 
 import os
 import numpy as np
@@ -33,7 +33,7 @@ class ExtractSample:
             self.image_scene_name = scene
 
         self.seq_length = snapshot_end - snapshot_start + 1
-        assert self.seq_length == 750, f"序列长度必须是750，当前: {self.seq_length}"
+        assert self.seq_length == 750, f"Sequence length must be750, Current: {self.seq_length}"
 
         self.mask = self._load_mask()
 
@@ -55,12 +55,12 @@ class ExtractSample:
         )
 
         if not os.path.exists(mask_path):
-            raise FileNotFoundError(f"Mask文件不存在: {mask_path}")
+            raise FileNotFoundError(f"MaskFile does not exist: {mask_path}")
 
         mask = np.load(mask_path)
 
         if mask.shape[0] != 750:
-            raise ValueError(f"Mask长度错误: {mask.shape[0]}, 期望750")
+            raise ValueError(f"MaskWrong length: {mask.shape[0]}, Expectations750")
 
         return mask
 
@@ -92,7 +92,7 @@ class ExtractSample:
                     images.append(image_tensor)
                     valid_mask.append(True)
                 except Exception as e:
-                    print(f"⚠️  加载图像失败: {image_path}, 错误: {e}")
+                    print(f"⚠️  Failed to load image: {image_path}, Error: {e}")
                     images.append(torch.zeros(3, 224, 224))
                     valid_mask.append(False)
 
@@ -115,7 +115,7 @@ class ExtractSample:
     def __repr__(self):
         info = self.get_info()
         return f"ExtractSample({info['scene']}/{info['rsf']}/{info['view']}, " \
-               f"缺失帧: {info['missing_frames']}/750)"
+               f"Missing Frame: {info['missing_frames']}/750)"
 
 def scan_samples(mask_dir: str, views: List[str]) -> List[Tuple[str, str, str]]:
 
@@ -123,7 +123,7 @@ def scan_samples(mask_dir: str, views: List[str]) -> List[Tuple[str, str, str]]:
     mask_dir_path = Path(mask_dir)
 
     if not mask_dir_path.exists():
-        raise FileNotFoundError(f"Mask目录不存在: {mask_dir}")
+        raise FileNotFoundError(f"MaskDirectory does not exist: {mask_dir}")
 
     for scene_dir in sorted(mask_dir_path.iterdir()):
         if not scene_dir.is_dir():
@@ -150,7 +150,7 @@ def create_extract_samples(dataset_config: Dict, views: List[str]) -> List[Extra
 
     sample_tuples = scan_samples(dataset_config['mask_dir'], views)
 
-    print(f"📊 扫描到 {len(sample_tuples)} 个样本")
+    print(f"📊 Scan To {len(sample_tuples)} samples")
 
     samples = []
     for scene, rsf, view in sample_tuples:
@@ -168,9 +168,9 @@ def create_extract_samples(dataset_config: Dict, views: List[str]) -> List[Extra
             )
             samples.append(sample)
         except Exception as e:
-            print(f"⚠️  创建样本失败: {scene}/{rsf}/{view}, 错误: {e}")
+            print(f"⚠️  Failed to create sample: {scene}/{rsf}/{view}, Error: {e}")
 
-    print(f"✅ 成功创建 {len(samples)} 个样本")
+    print(f"✅ Successfully created {len(samples)} samples")
 
     return samples
 
@@ -180,17 +180,17 @@ if __name__ == "__main__":
     from config_infer import TRAIN_CONFIG, TEST_CONFIG, VIEWS
 
     print("=" * 80)
-    print("测试训练集样本扫描")
+    print("Test training set sample scan")
     print("=" * 80)
     train_samples = create_extract_samples(TRAIN_CONFIG, VIEWS)
     if train_samples:
-        print(f"\n第一个样本: {train_samples[0]}")
-        print(f"样本信息: {train_samples[0].get_info()}")
+        print(f"\nFirst sample: {train_samples[0]}")
+        print(f"Sample Information: {train_samples[0].get_info()}")
 
     print("\n" + "=" * 80)
-    print("测试测试集样本扫描")
+    print("Test Test Set Sample Scan")
     print("=" * 80)
     test_samples = create_extract_samples(TEST_CONFIG, VIEWS)
     if test_samples:
-        print(f"\n第一个样本: {test_samples[0]}")
-        print(f"样本信息: {test_samples[0].get_info()}")
+        print(f"\nFirst sample: {test_samples[0]}")
+        print(f"Sample Information: {test_samples[0].get_info()}")

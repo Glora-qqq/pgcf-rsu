@@ -1,4 +1,4 @@
-"""按相机朝向做交叉注意力，融合左、中、右三个视角。"""
+"""Cross-attention by camera orientation, Fusion Left, Medium, Right three perspectives. """
 
 import torch
 import torch.nn as nn

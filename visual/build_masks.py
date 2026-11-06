@@ -1,4 +1,4 @@
-"""根据覆盖率文本生成 RGB 缺失帧掩码。"""
+"""Generate from Coverage Text RGB Missing Frame Mask. """
 
 import numpy as np
 import os
@@ -68,7 +68,7 @@ def create_mask_array(missing_ranges, total_frames, snapshot_offset=0):
         mask_end = end - snapshot_offset
 
         if mask_start < 0 or mask_end > total_frames:
-            print(f"⚠️  警告：区间 {start}-{end} 超出范围，跳过")
+            print(f"⚠️  Warning: Interval {start}-{end} Out of range, Skip")
             continue
 
         mask[mask_start:mask_end] = True
@@ -78,12 +78,12 @@ def create_mask_array(missing_ranges, total_frames, snapshot_offset=0):
 def generate_masks(coverage_file, output_dir, total_frames, dataset_name, snapshot_offset=0):
 
     print(f"\n{'='*70}")
-    print(f"生成{dataset_name}集RGB mask")
+    print(f"Generate{dataset_name}SetRGB mask")
     print(f"{'='*70}")
 
     missing_info = parse_coverage_file(coverage_file)
 
-    print(f"\n检测到 {len(missing_info)} 个Scene-RSF组合")
+    print(f"\nDetected {len(missing_info)} PieceScene-RSFCombination")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -111,20 +111,20 @@ def generate_masks(coverage_file, output_dir, total_frames, dataset_name, snapsh
             total_missing += num_missing
             missing_rate = (num_missing / total_frames) * 100
 
-            print(f"  {rsf}: {num_missing}/{total_frames} 帧缺失 ({missing_rate:.1f}%)")
-            print(f"       缺失区间: {missing_ranges}")
-            print(f"       ✅ 保存到: {filepath}")
+            print(f"  {rsf}: {num_missing}/{total_frames} Frame Missing ({missing_rate:.1f}%)")
+            print(f"       Missing interval: {missing_ranges}")
+            print(f"       ✅ Save to: {filepath}")
 
     total_frames_all = len(missing_info) * total_frames
     overall_missing_rate = (total_missing / total_frames_all) * 100
 
     print(f"\n{'='*70}")
-    print(f"{dataset_name}集统计:")
+    print(f"{dataset_name}Set Stats:")
     print(f"{'='*70}")
-    print(f"  Scene-RSF组合数: {len(missing_info)}")
-    print(f"  总帧数: {total_frames_all}")
-    print(f"  缺失帧数: {total_missing}")
-    print(f"  缺失率: {overall_missing_rate:.2f}%")
+    print(f"  Scene-RSFNumber of combinations: {len(missing_info)}")
+    print(f"  Total frames: {total_frames_all}")
+    print(f"  Missing frames: {total_missing}")
+    print(f"  Missing rate: {overall_missing_rate:.2f}%")
 
     return missing_info
 
@@ -132,11 +132,11 @@ def verify_mask(mask_file):
 
     mask = np.load(mask_file)
 
-    print(f"\nMask验证: {os.path.basename(mask_file)}")
-    print(f"  形状: {mask.shape}")
-    print(f"  数据类型: {mask.dtype}")
-    print(f"  缺失帧数: {mask.sum()}")
-    print(f"  缺失率: {mask.sum() / len(mask) * 100:.2f}%")
+    print(f"\nMaskVerify: {os.path.basename(mask_file)}")
+    print(f"  Shape: {mask.shape}")
+    print(f"  Data Type: {mask.dtype}")
+    print(f"  Missing frames: {mask.sum()}")
+    print(f"  Missing rate: {mask.sum() / len(mask) * 100:.2f}%")
 
     missing_frames = np.where(mask)[0] + 1
     if len(missing_frames) > 0:
@@ -150,12 +150,12 @@ def verify_mask(mask_file):
             start_idx = break_idx + 1
         ranges.append((missing_frames[start_idx], missing_frames[-1]))
 
-        print(f"  缺失区间: {ranges}")
+        print(f"  Missing interval: {ranges}")
 
 def main():
 
     print("=" * 70)
-    print("生成RGB缺失帧Mask文件")
+    print("GenerateRGBMissing FrameMaskFile")
     print("=" * 70)
 
     base_dir = os.environ.get('RGB_WORK_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs'))
@@ -167,7 +167,7 @@ def main():
         coverage_file=os.environ.get('RGB_COVERAGE_TRAIN', os.path.join(data_root, 'rgb_coverage_train_output.txt')),
         output_dir=train_output_dir,
         total_frames=750,
-        dataset_name='训练',
+        dataset_name='Training',
         snapshot_offset=0
     )
 
@@ -176,12 +176,12 @@ def main():
         coverage_file=os.environ.get('RGB_COVERAGE_TEST', os.path.join(data_root, 'rgb_coverage_test_output.txt')),
         output_dir=test_output_dir,
         total_frames=750,
-        dataset_name='测试',
+        dataset_name='Test',
         snapshot_offset=750
     )
 
     print("\n" + "=" * 70)
-    print("验证示例Mask文件")
+    print("Examples of validationMaskFile")
     print("=" * 70)
 
     if train_missing:
@@ -196,9 +196,9 @@ def main():
 
     readme_path = os.path.join(base_dir, 'README_mask.txt')
     with open(readme_path, 'w', encoding='utf-8') as f:
-        f.write("RGB缺失帧Mask文件说明\n")
+        f.write("RGBMissing FrameMaskDocument description\n")
         f.write("="*70 + "\n\n")
-        f.write("目录结构:\n")
+        f.write("Directory Structure:\n")
         f.write("env_feature/\n")
         f.write("├── mask-RGB-train/\n")
         f.write("│   ├── Scene1/\n")
@@ -208,26 +208,26 @@ def main():
         f.write("│   ├── Scene2/\n")
         f.write("│   └── Scene3/\n")
         f.write("└── mask-RGB-test/\n")
-        f.write("    └── (同上结构)\n\n")
-        f.write("文件格式:\n")
-        f.write("- 文件名: SceneX_RSFY_RGBmask.npy\n")
-        f.write("- 数据类型: numpy.ndarray, dtype=bool\n")
-        f.write("- 形状: [750] (750帧)\n")
-        f.write("- 值: True=缺失帧, False=有效帧\n")
-        f.write("- 索引: 0-based (mask[0]对应第1帧)\n\n")
-        f.write("使用示例:\n")
+        f.write("    └── (Ditto structure)\n\n")
+        f.write("File Format:\n")
+        f.write("- Filename: SceneX_RSFY_RGBmask.npy\n")
+        f.write("- Data Type: numpy.ndarray, dtype=bool\n")
+        f.write("- Shape: [750] (750Frame)\n")
+        f.write("- Value: True=Missing Frame, False=Valid Frames\n")
+        f.write("- Index: 0-based (mask[0]Corresponding to1Frame)\n\n")
+        f.write("Usage example:\n")
         f.write("mask = np.load('mask-RGB-train/Scene1/Scene1_RSF1_RGBmask.npy')\n")
         f.write("missing_frame_ids = np.where(mask)[0] + 1\n")
         f.write("valid_frame_ids = np.where(~mask)[0] + 1\n")
 
-    print(f"\n✅ 使用说明已保存到: {readme_path}")
+    print(f"\n✅ Instructions saved to: {readme_path}")
 
     print("\n" + "=" * 70)
-    print("🎉 完成！Mask文件已生成")
+    print("🎉 Done! MaskFile Generated")
     print("=" * 70)
-    print(f"\n训练集mask: {train_output_dir}")
-    print(f"测试集mask: {test_output_dir}")
-    print("\n下一步: 使用这些mask文件进行DINOv2特征提取")
+    print(f"\nTraining Setsmask: {train_output_dir}")
+    print(f"Test setmask: {test_output_dir}")
+    print("\nNext: Use thesemaskFile ProceedDINOv2Feature extraction")
 
 if __name__ == '__main__':
     main()

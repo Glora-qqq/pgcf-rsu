@@ -1,4 +1,4 @@
-"""读取带噪声的 GPS 六维位姿。"""
+"""Read noisy GPS Six-dimensional posture. """
 
 import os
 import numpy as np
@@ -83,7 +83,7 @@ def load_gps_txt(
             data = data.reshape(1, -1)
 
         if data.shape[1] < 6:
-            raise ValueError(f"数据列数不足，期望至少6列，实际{data.shape[1]}列")
+            raise ValueError(f"Insufficient data columns, Expect at least6Columns, Actual{data.shape[1]}Columns")
 
         positions = data[:, :3]
         orientations_raw = data[:, 3:6]
@@ -92,7 +92,7 @@ def load_gps_txt(
             original_z_min = positions[:, 2].min()
             original_z_max = positions[:, 2].max()
             positions[:, 2] = 0.0
-            print(f"  [GPS] Car车辆 {vehicle_name}: z坐标已设置为0（原始z范围: {original_z_min:.3f} 到 {original_z_max:.3f}）")
+            print(f"  [GPS] CarVehicle {vehicle_name}: zCoordinates set to0 (OriginalzScope: {original_z_min:.3f} To {original_z_max:.3f}) ")
 
         frame_ids = None
         if data.shape[1] >= 7:
@@ -118,7 +118,7 @@ def load_gps_txt(
                 )
             positions = positions_corrected
             if not is_aerial_vehicle(vehicle_name):
-                print(f"  [Height] Car车辆 {vehicle_name}: 高度修正完成")
+                print(f"  [Height] CarVehicle {vehicle_name}: Height correction complete")
 
         if config is not None and add_orientation_noise:
             if is_aerial_vehicle(vehicle_name):
@@ -157,8 +157,8 @@ def load_gps_txt(
         return positions, orientations, metadata
 
     except Exception as e:
-        print(f"[ERROR] 加载GPS文件失败: {txt_file_path}")
-        print(f"        错误: {e}")
+        print(f"[ERROR] LoadGPSFile failed: {txt_file_path}")
+        print(f"        Error: {e}")
         return None, None, {'error': str(e), 'file_path': str(txt_file_path)}
 
 def load_vehicle_gps(
@@ -175,9 +175,9 @@ def load_vehicle_gps(
         gps_file = vehicle_dir / f"{vehicle_name}_train_cat_noise.txt"
 
     if not gps_file.exists():
-        print(f"[WARNING] 找不到GPS噪声文件:")
-        print(f"           场景={scene_name}, 车辆={vehicle_name}")
-        print(f"           路径={gps_file}")
+        print(f"[WARNING] Not foundGPSNoise File:")
+        print(f"           Scenario={scene_name}, Vehicle={vehicle_name}")
+        print(f"           Path={gps_file}")
         return None, None, {'error': 'file_not_found'}
 
     if config is not None:
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     data_root = Path(os.environ.get('DATA_ROOT', Path(__file__).resolve().parents[3] / 'data')) / 'train'
 
     print("="*80)
-    print("测试普通车辆GPS (Car10, Scene1)")
+    print("Test Ordinary VehiclesGPS (Car10, Scene1)")
     print("="*80)
     positions, orientations, metadata = load_vehicle_gps(
         data_root,
@@ -209,18 +209,18 @@ if __name__ == '__main__':
     )
 
     if positions is not None:
-        print(f"加载成功:")
-        print(f"  帧数: {metadata['num_frames']}")
-        print(f"  是否空中车辆: {metadata['is_aerial']}")
-        print(f"  高度修正: {metadata['height_correction_applied']}")
-        print(f"  数据类型: {metadata['data_type']}")
-        print(f"\n前3帧GPS位置:")
+        print(f"Loaded successfully:")
+        print(f"  Frames: {metadata['num_frames']}")
+        print(f"  Is Air Vehicle: {metadata['is_aerial']}")
+        print(f"  Height correction: {metadata['height_correction_applied']}")
+        print(f"  Data Type: {metadata['data_type']}")
+        print(f"\nago3FrameGPSLocation:")
         print(positions[:3])
-        print(f"\n前3帧姿态 (弧度):")
+        print(f"\nago3Frame Pose (Radian):")
         print(orientations[:3])
 
     print("\n" + "="*80)
-    print("测试空中出租车GPS (AT1, Scene3)")
+    print("Test Air TaxiGPS (AT1, Scene3)")
     print("="*80)
     positions, orientations, metadata = load_vehicle_gps(
         data_root,
@@ -229,12 +229,12 @@ if __name__ == '__main__':
     )
 
     if positions is not None:
-        print(f"加载成功:")
-        print(f"  帧数: {metadata['num_frames']}")
-        print(f"  是否空中车辆: {metadata['is_aerial']}")
-        print(f"  高度修正: {metadata['height_correction_applied']}")
-        print(f"  数据类型: {metadata['data_type']}")
-        print(f"\n前3帧GPS位置:")
+        print(f"Loaded successfully:")
+        print(f"  Frames: {metadata['num_frames']}")
+        print(f"  Is Air Vehicle: {metadata['is_aerial']}")
+        print(f"  Height correction: {metadata['height_correction_applied']}")
+        print(f"  Data Type: {metadata['data_type']}")
+        print(f"\nago3FrameGPSLocation:")
         print(positions[:3])
-        print(f"\n前3帧姿态 (弧度):")
+        print(f"\nago3Frame Pose (Radian):")
         print(orientations[:3])

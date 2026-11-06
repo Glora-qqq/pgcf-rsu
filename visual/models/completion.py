@@ -1,4 +1,4 @@
-"""用 Transformer 根据相邻帧补全缺失的视觉特征。"""
+"""For Transformer Completes missing visual features based on adjacent frames. """
 
 import math
 import torch
@@ -84,7 +84,7 @@ class TransformerFeatureCompletion(nn.Module):
     def forward(self, src, src_mask=None, src_key_padding_mask=None):
 
         assert src.size(-1) == self.d_model,\
-            f"输入特征维度 {src.size(-1)} != 模型维度 {self.d_model}"
+            f"Enter feature dimension {src.size(-1)} != Model Dimensions {self.d_model}"
 
         src = self.pos_encoder(src)
 
@@ -144,17 +144,17 @@ if __name__ == '__main__':
     import numpy as np
 
     print("=" * 70)
-    print("Transformer特征补全模型测试")
+    print("TransformerFeature Completion Model Testing")
     print("=" * 70)
 
-    print("\n创建模型...")
+    print("\nCreate Model...")
     model = create_model()
-    print(f"模型架构: {model.__class__.__name__}")
+    print(f"Model Architecture: {model.__class__.__name__}")
 
-    print("\n模型参数:")
+    print("\nModel Parameters:")
     count_parameters(model)
 
-    print("\n测试前向传播...")
+    print("\nTest Forward Propagation...")
     batch_size = 2
     seq_len = 750
     d_model = 1024
@@ -164,32 +164,32 @@ if __name__ == '__main__':
 
     features[mask] = 0
 
-    print(f"  输入形状: {features.shape}")
-    print(f"  Mask形状: {mask.shape}")
-    print(f"  缺失帧数: {mask.sum().item()} / {batch_size * seq_len}")
+    print(f"  Input Shape: {features.shape}")
+    print(f"  MaskShape: {mask.shape}")
+    print(f"  Missing frames: {mask.sum().item()} / {batch_size * seq_len}")
 
     model.eval()
     with torch.no_grad():
         output = model(features, src_key_padding_mask=mask)
 
-    print(f"  输出形状: {output.shape}")
-    print(f"  输出范围: [{output.min():.3f}, {output.max():.3f}]")
+    print(f"  Output Shape: {output.shape}")
+    print(f"  Output Range: [{output.min():.3f}, {output.max():.3f}]")
 
-    print("\n测试predict方法...")
+    print("\nTestpredictMethod...")
     features_np = features.numpy()
     mask_np = mask.numpy()
 
     completed = model.predict(features_np, mask_np)
-    print(f"  补全后形状: {completed.shape}")
-    print(f"  补全后范围: [{completed.min():.3f}, {completed.max():.3f}]")
+    print(f"  Shape after completion: {completed.shape}")
+    print(f"  Range after completion: [{completed.min():.3f}, {completed.max():.3f}]")
 
     missing_indices = np.where(mask_np[0])[0]
     if len(missing_indices) > 0:
-        print(f"\n检查第1个样本的缺失帧补全:")
-        print(f"  缺失帧索引: {missing_indices[:5]}...")
-        print(f"  补全前范数: {np.linalg.norm(features_np[0, missing_indices[0]]):.3f}")
-        print(f"  补全后范数: {np.linalg.norm(completed[0, missing_indices[0]]):.3f}")
+        print(f"\nCheck Paragraph1Missing frame completion for samples:")
+        print(f"  Missing frame index: {missing_indices[:5]}...")
+        print(f"  Norm before completion: {np.linalg.norm(features_np[0, missing_indices[0]]):.3f}")
+        print(f"  Norms after completion: {np.linalg.norm(completed[0, missing_indices[0]]):.3f}")
 
     print("\n" + "=" * 70)
-    print("✅ 测试通过！")
+    print("✅ Test passed! ")
     print("=" * 70)

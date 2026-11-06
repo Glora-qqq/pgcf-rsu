@@ -1,0 +1,10 @@
+torch
+torchvision
+numpy
+scipy
+pillow
+tqdm
+einops
+timm
+filterpy
+scikit-learn

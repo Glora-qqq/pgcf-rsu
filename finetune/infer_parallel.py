@@ -1,0 +1,292 @@
+"""多 GPU 版本的融合特征导出。"""
+
+import torch
+import torch.multiprocessing as mp
+import numpy as np
+from pathlib import Path
+from tqdm import tqdm
+import json
+import argparse
+import time
+from typing import Dict, List, Tuple
+import sys
+
+from config_infer import *
+
+from models.network import GatedWiFo
+
+from data.full_sequence import (
+    load_vehicle_data_for_extraction,
+    SCENE_CSI_SUFFIX,
+    VEHICLE_NAME_MAPPING,
+)
+
+from utils.aggregate import (
+    patch_to_frame_features,
+    aggregate_window_features_to_frames,
+    crop_features_by_gps,
+)
+from data.gps import get_vehicle_frame_info
+
+from infer import FeatureExtractor
+
+def collect_all_tasks(is_test=False):
+
+    tasks = []
+
+    if is_test:
+        scenes = TEST_SCENES
+        rsf_config = TEST_RSF_CONFIG
+        data_root = TEST_DATA_ROOT
+    else:
+        scenes = TRAIN_SCENES
+        rsf_config = TRAIN_RSF_CONFIG
+        data_root = TRAIN_DATA_ROOT
+
+    for scene in scenes:
+        rsf_list = rsf_config.get(scene, [])
+
+        for rsf in rsf_list:
+            rsf_dir = data_root / scene / rsf / 'CSI'
+
+            if not rsf_dir.exists():
+                print(f"[WARNING] RSF目录不存在: {rsf_dir}")
+                continue
+
+            csi_files = list(rsf_dir.glob('*.mat'))
+
+            if not csi_files:
+                print(f"[WARNING] {scene}/{rsf} 无CSI文件")
+                continue
+
+            vehicles = set()
+            for f in csi_files:
+                parts = f.stem.split('_')
+                if len(parts) >= 2:
+                    vehicle = parts[1]
+                    vehicles.add(vehicle)
+
+            for vehicle in sorted(vehicles):
+                tasks.append((scene, rsf, vehicle))
+
+    return tasks
+
+def process_task_list(
+    gpu_id: int,
+    task_list: List[Tuple[str, str, str]],
+    checkpoint_path: Path,
+    is_test: bool,
+    progress_dict: dict = None
+):
+
+    device = f'cuda:{gpu_id}'
+    print(f"\n[GPU {gpu_id}] 开始处理 {len(task_list)} 个车辆")
+    print(f"[GPU {gpu_id}] 设备: {device}")
+
+    try:
+        extractor = FeatureExtractor(
+            checkpoint_path=checkpoint_path,
+            config=EXTRACT_CONFIG,
+            device=device
+        )
+    except Exception as e:
+        print(f"[GPU {gpu_id}] [ERROR] 初始化失败: {e}")
+        return
+
+    success = 0
+    failed = []
+
+    for idx, (scene, rsf, vehicle) in enumerate(task_list):
+        try:
+            print(f"\n[GPU {gpu_id}] [{idx+1}/{len(task_list)}] {scene}/{rsf}/{vehicle}")
+
+            if is_test:
+                data_root = TEST_DATA_ROOT
+                mask_root = TEST_MASK_ROOT
+                rgb_root = TEST_RGB_ROOT
+            else:
+                data_root = TRAIN_DATA_ROOT
+                mask_root = TRAIN_MASK_ROOT
+                rgb_root = TRAIN_RGB_ROOT
+
+            extractor.extract_vehicle_features(
+                scene=scene,
+                rsf=rsf,
+                vehicle=vehicle,
+                data_root=data_root,
+                mask_root=mask_root,
+                rgb_root=rgb_root,
+                is_test=is_test
+            )
+
+            success += 1
+
+            if progress_dict is not None:
+                progress_dict[gpu_id] = (idx + 1, len(task_list), success)
+
+        except Exception as e:
+            print(f"[GPU {gpu_id}] [ERROR] {scene}/{rsf}/{vehicle} 失败: {e}")
+            failed.append(f"{scene}/{rsf}/{vehicle}")
+
+            import traceback
+            traceback.print_exc()
+
+    print(f"\n[GPU {gpu_id}] 完成！")
+    print(f"[GPU {gpu_id}] 成功: {success}/{len(task_list)}")
+    print(f"[GPU {gpu_id}] 失败: {len(failed)}")
+
+    if failed:
+        print(f"[GPU {gpu_id}] 失败列表:")
+        for v in failed:
+            print(f"  - {v}")
+
+    return success, failed
+
+def split_tasks_to_gpus(tasks: List, num_gpus: int) -> List[List]:
+
+    task_lists = [[] for _ in range(num_gpus)]
+
+    for idx, task in enumerate(tasks):
+        gpu_id = idx % num_gpus
+        task_lists[gpu_id].append(task)
+
+    return task_lists
+
+def main():
+
+    parser = argparse.ArgumentParser(description='PGCF-RSU feature export')
+    parser.add_argument('--num_gpus', type=int, default=8, help='使用的GPU数量')
+    parser.add_argument('--gpu_ids', type=str, default=None, help='指定GPU ID，例如 "0,1,2,3"')
+    parser.add_argument('--test_only', action='store_true', help='只提取测试集')
+    parser.add_argument('--train_only', action='store_true', help='只提取训练集')
+    args = parser.parse_args()
+
+    print("=" * 70)
+    print("PGCF-RSU 特征导出")
+    print("=" * 70)
+
+    if args.gpu_ids:
+        gpu_ids = [int(x) for x in args.gpu_ids.split(',')]
+        num_gpus = len(gpu_ids)
+    else:
+        num_gpus = min(args.num_gpus, torch.cuda.device_count())
+        gpu_ids = list(range(num_gpus))
+
+    print(f"\n使用GPU: {gpu_ids} ({num_gpus}张)")
+    print(f"Checkpoint: {CHECKPOINT_PATH}")
+
+    for gpu_id in gpu_ids:
+        if gpu_id >= torch.cuda.device_count():
+            print(f"[ERROR] GPU {gpu_id} 不存在！")
+            return
+
+        device_name = torch.cuda.get_device_name(gpu_id)
+        print(f"  GPU {gpu_id}: {device_name}")
+
+    print_config_summary()
+
+    print("\n验证配置...")
+    if not verify_config():
+        print("\n⚠️  配置验证失败，请检查路径配置！")
+        return
+
+    if not args.test_only:
+        print("\n" + "="*70)
+        print("收集训练集任务...")
+        print("="*70)
+
+        train_tasks = collect_all_tasks(is_test=False)
+        print(f"总任务数: {len(train_tasks)}")
+
+        if train_tasks:
+            train_task_lists = split_tasks_to_gpus(train_tasks, num_gpus)
+
+            print("\n任务分配:")
+            for gpu_id, task_list in zip(gpu_ids, train_task_lists):
+                print(f"  GPU {gpu_id}: {len(task_list)} 个车辆")
+
+            print("\n" + "="*70)
+            print("开始并行提取训练集特征...")
+            print("="*70)
+
+            start_time = time.time()
+
+            mp.set_start_method('spawn', force=True)
+
+            processes = []
+            for gpu_id, task_list in zip(gpu_ids, train_task_lists):
+                if not task_list:
+                    continue
+
+                p = mp.Process(
+                    target=process_task_list,
+                    args=(gpu_id, task_list, CHECKPOINT_PATH, False)
+                )
+                p.start()
+                processes.append(p)
+
+            for p in processes:
+                p.join()
+
+            elapsed = time.time() - start_time
+            print(f"\n训练集提取完成！耗时: {elapsed/60:.1f} 分钟")
+
+    if not args.train_only:
+        print("\n" + "="*70)
+        print("收集测试集任务...")
+        print("="*70)
+
+        test_tasks = collect_all_tasks(is_test=True)
+        print(f"总任务数: {len(test_tasks)}")
+
+        if test_tasks:
+            test_task_lists = split_tasks_to_gpus(test_tasks, num_gpus)
+
+            print("\n任务分配:")
+            for gpu_id, task_list in zip(gpu_ids, test_task_lists):
+                print(f"  GPU {gpu_id}: {len(task_list)} 个车辆")
+
+            print("\n" + "="*70)
+            print("开始并行提取测试集特征...")
+            print("="*70)
+
+            start_time = time.time()
+
+            mp.set_start_method('spawn', force=True)
+
+            processes = []
+            for gpu_id, task_list in zip(gpu_ids, test_task_lists):
+                if not task_list:
+                    continue
+
+                p = mp.Process(
+                    target=process_task_list,
+                    args=(gpu_id, task_list, CHECKPOINT_PATH, True)
+                )
+                p.start()
+                processes.append(p)
+
+            for p in processes:
+                p.join()
+
+            elapsed = time.time() - start_time
+            print(f"\n测试集提取完成！耗时: {elapsed/60:.1f} 分钟")
+
+    print("\n" + "="*70)
+    print("所有特征提取完成！")
+    print("="*70)
+
+    print("\n生成提取摘要...")
+    try:
+        extractor_temp = FeatureExtractor(
+            checkpoint_path=CHECKPOINT_PATH,
+            config=EXTRACT_CONFIG,
+            device='cuda:0'
+        )
+        extractor_temp.save_extraction_summary()
+        print("✓ 摘要已保存")
+    except Exception as e:
+        print(f"⚠️  摘要生成失败: {e}")
+
+if __name__ == '__main__':
+    main()

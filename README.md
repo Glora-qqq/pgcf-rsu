@@ -8,7 +8,9 @@
 
 ## 方法
 
-<img src="docs/figures/overview.jpg" alt="方法总流程" width="720">
+<p align="center">
+  <img src="docs/figures/overview.jpg" alt="方法总流程" width="100%">
+</p>
 
 ```text
 多视角 RGB
@@ -35,11 +37,9 @@ export DINOV2_WEIGHTS=/path/to/dinov2_vitl14_reg4_pretrain.pth
 export WIFO_WEIGHTS=/path/to/WiFo-RGB.pkl
 ```
 
-- [DINOv2](https://github.com/facebookresearch/dinov2) 是视觉编码器。`DINOV2_ROOT` 指向克隆下来的仓库，`DINOV2_WEIGHTS` 使用 [dinov2_vitl14_reg4_pretrain.pth](https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth)。
-- [WiFo](https://github.com/PKU-PCNI/WiFo) 是信道编码器。预训练模型在该仓库发布。本仓库读取的文件名是 `WiFo-RGB.pkl`，用 `WIFO_WEIGHTS` 指向它。
-- 赛题数据来自 [Codabench 赛题三](https://www.codabench.org/competitions/11207/#/participate-tab)，通知见 [2025中国智能车未来挑战赛](https://ivfc.caa.org.cn/info/1017/1121.htm)。`DATA_ROOT` 下需要 `train/`、`test/`、`images/train/`、`images/test/`，以及 RGB 覆盖率文本。
-
-赛题数据、WiFo 权重和 DINOv2 权重都不在本仓库里。
+- [DINOv2](https://github.com/facebookresearch/dinov2) 是视觉编码器。`DINOV2_ROOT` 指向克隆的仓库，`DINOV2_WEIGHTS` 使用 [dinov2_vitl14_reg4_pretrain.pth](https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth)。
+- [WiFo](https://github.com/PKU-PCNI/WiFo) 是信道编码器。预训练模型在该仓库发布。本仓库读取名为 `WiFo-RGB.pkl`，用 `WIFO_WEIGHTS` 指向它。
+- 赛题数据来自 [Codabench 赛题三](https://www.codabench.org/competitions/11207/#/participate-tab)，通知见 [2025中国智能车未来挑战赛](https://ivfc.caa.org.cn/info/1017/1121.htm)。赛题数据、WiFo 权重和 DINOv2 权重都参考链接仓库。
 
 阶段之间的文件名需要保持不变：`visual/pack_features.py` 写出 `{Scene}_{RSF}_features.npz`，键名是 `fused`；`finetune` 导出 `{vehicle}_RSF{n}_wifo_features.npy`，定位阶段按这个名字读取。
 

@@ -21,7 +21,7 @@ GPS + 12 维几何量
 
 ## 环境
 
-Python 3.9，PyTorch 2.x。
+[Python 3.9](https://www.python.org/downloads/release/python-390/)，[PyTorch 2.x](https://pytorch.org/)。
 
 ```bash
 pip install -r requirements.txt
@@ -35,7 +35,11 @@ export DINOV2_WEIGHTS=/path/to/dinov2_vitl14_reg4_pretrain.pth
 export WIFO_WEIGHTS=/path/to/WiFo-RGB.pkl
 ```
 
-`DATA_ROOT` 下需要 `train/`、`test/`、`images/train/`、`images/test/`，以及 RGB 覆盖率文本。赛题数据、WiFo 权重和 DINOv2 权重都不在本仓库里。
+- [DINOv2](https://github.com/facebookresearch/dinov2) 是视觉编码器。`DINOV2_ROOT` 指向克隆下来的仓库，`DINOV2_WEIGHTS` 使用 [dinov2_vitl14_reg4_pretrain.pth](https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth)。
+- [WiFo](https://github.com/PKU-PCNI/WiFo) 是信道编码器。预训练模型在该仓库发布。本仓库读取的文件名是 `WiFo-RGB.pkl`，用 `WIFO_WEIGHTS` 指向它。
+- 赛题数据来自 [Codabench 赛题三](https://www.codabench.org/competitions/11207/#/participate-tab)，通知见 [2025中国智能车未来挑战赛](https://ivfc.caa.org.cn/info/1017/1121.htm)。`DATA_ROOT` 下需要 `train/`、`test/`、`images/train/`、`images/test/`，以及 RGB 覆盖率文本。
+
+赛题数据、WiFo 权重和 DINOv2 权重都不在本仓库里。
 
 阶段之间的文件名需要保持不变：`visual/pack_features.py` 写出 `{Scene}_{RSF}_features.npz`，键名是 `fused`；`finetune` 导出 `{vehicle}_RSF{n}_wifo_features.npy`，定位阶段按这个名字读取。
 
@@ -81,7 +85,7 @@ python infer.py
 ## 致谢
 
 - 感谢中国智能车未来挑战赛组委会和赛题三提供数据与 Codabench 评测。
-- 信道编码器使用 WiFo：Boxun Liu, Shijian Gao, Xuanyu Liu, Xiang Cheng, Liuqing Yang, *WiFo: Wireless Foundation Model for Channel Prediction*。
+- 信道编码器使用 [WiFo](https://github.com/PKU-PCNI/WiFo)：Boxun Liu, Shijian Gao, Xuanyu Liu, Xiang Cheng, Liuqing Yang, *WiFo: Wireless Foundation Model for Channel Prediction*。
 - 视觉编码器使用 Meta [DINOv2](https://github.com/facebookresearch/dinov2)，Apache-2.0。
 
 ## 许可

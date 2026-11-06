@@ -8,7 +8,7 @@
 
 ## 方法
 
-![方法总流程](docs/figures/overview.jpg)
+<img src="docs/figures/overview.jpg" alt="方法总流程" width="720">
 
 四步和仓库目录一一对应：
 
@@ -21,15 +21,13 @@ GPS + 12 维几何量
   → localize/        按观测质量融合多路侧单元，预测位姿修正
 ```
 
-![门控权重](docs/figures/gate.jpg)
-
 门控从很小的初值慢慢打开，避免视觉特征一开始盖过已经预训练好的信道表征。
-
-![Scene 3 空中轨迹](docs/figures/trajectory.jpg)
 
 ## 论文中的定位误差
 
 动态加权的 CSI+RGB 在四组评测上的平均绝对误差为 **0.1846、0.2057、0.3080、0.1581 m**。相对原始 GPS 分别下降 **86.69%、85.06%、84.69%、88.49%**，相对 KF/UKF 滤波先验分别下降 **75.01%、72.09%、78.48%、78.69%**。数字来自投稿《自动化学报》的文稿，不是本仓库重新跑出来的日志。
+
+<img src="docs/figures/trajectory.jpg" alt="Scene 3 空中轨迹" width="880">
 
 ## 环境
 
@@ -87,7 +85,7 @@ python infer.py
 | `visual/` | 多视角视觉特征、缺帧补全、三视角融合 |
 | `finetune/` | WiFo 渐进门控微调，以及按车辆导出特征 |
 | `localize/` | 几何质量融合和 GPS 引导的位姿回归 |
-| `docs/figures/` | 论文中的流程、门控曲线和轨迹图 |
+| `docs/figures/` | 论文中的流程和轨迹图 |
 
 每个程序文件开头只有一句用途说明。
 

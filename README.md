@@ -8,10 +8,6 @@
 
 ## 方法
 
-<p align="center">
-  <img src="docs/figures/overview.jpg" alt="方法总流程" width="100%">
-</p>
-
 ```text
 多视角 RGB
   → visual/          朝向编码与交叉注意力，补全缺失帧，得到 1024 维视觉特征
